@@ -43,9 +43,9 @@ function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <div className={compact ? 'logo compact' : 'logo'}>
       <img
-        src={compact ? './brand/vertia-logo.svg' : './brand/vertia-logo-inverse.svg'}
+        src={compact ? './brand/vertia-logo.svg?v=spacing-1' : './brand/vertia-logo-inverse.svg?v=spacing-1'}
         alt="Vértia"
-        width="1520"
+        width="1565"
         height="411"
       />
     </div>
