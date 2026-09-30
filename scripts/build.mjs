@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 
 rmSync('dist', { recursive: true, force: true })
@@ -21,5 +21,5 @@ const productionHtml = sourceHtml.replace(
 )
 
 writeFileSync('dist/index.html', productionHtml)
-copyFileSync('public/vertia-logo.png', 'dist/vertia-logo.png')
+cpSync('public', 'dist', { recursive: true })
 console.log('Build concluído em dist/.')

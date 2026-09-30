@@ -42,7 +42,12 @@ const moduleCards = [
 function Logo({ compact = false }: { compact?: boolean }) {
   return (
     <div className={compact ? 'logo compact' : 'logo'}>
-      <img src="./vertia-logo.png" alt="Vértia" />
+      <img
+        src={compact ? './brand/vertia-logo.svg' : './brand/vertia-logo-inverse.svg'}
+        alt="Vértia"
+        width="1520"
+        height="411"
+      />
     </div>
   )
 }
