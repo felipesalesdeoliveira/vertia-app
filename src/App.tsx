@@ -1,32 +1,40 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type Dispatch, type FormEvent, type SetStateAction } from 'react'
 import {
-  Bell, Building2, Camera, CalendarDays, Check, CheckCircle2, ChevronDown,
-  ChevronLeft, ChevronRight, ClipboardCheck, Clock3, FileText, FolderOpen,
+  ArrowLeftRight, Bell, Building2, Camera, CalendarDays, Check, CheckCircle2, ChevronDown,
+  ChevronLeft, ChevronRight, ClipboardCheck, Clock3, FileText, Filter, FolderOpen,
   HardHat, Home, Image, LayoutDashboard, LockKeyhole, LogOut, Mail, Menu,
-  MessageCircle, Mic, MoreHorizontal, Pause, Play, Plus, Search, Send, Settings,
-  ShieldCheck, Smartphone, Sparkles, Trash2, Upload, UserRound, Users, X,
+  MessageCircle, Mic, MoreHorizontal, Package, Pause, Play, Plus, Search, Send, Settings,
+  ShieldCheck, Smartphone, Sparkles, Trash2, TrendingUp, Upload, UserRound, Users, X,
 } from './icons'
 import { initialUpdates, projects, type Project, type Update } from './data'
+import { CrmBoard, initialLeads, isOpenLead, type Lead } from './crm'
+import { CashFlow, FinanceOverview } from './finance'
+import { ProfilesPage } from './profiles'
 
 type ViewMode = 'company' | 'client'
-type Page = 'dashboard' | 'projects' | 'finance' | 'crm' | 'inventory' | 'invoices' | 'administration' | 'documents' | 'updates' | 'approvals' | 'people' | 'settings'
+type Page = 'dashboard' | 'projects' | 'finance' | 'cashflow' | 'crm' | 'inventory' | 'invoices' | 'administration' | 'documents' | 'updates' | 'approvals' | 'people' | 'settings'
 type Role = 'admin' | 'engineer' | 'field' | 'client'
 
 const navGroups = [
   { label: 'VISÃO GERAL', items: [
     { id: 'dashboard' as Page, label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'projects' as Page, label: 'Obras', icon: Building2, count: '4' },
   ] },
-  { label: 'GESTÃO', items: [
-    { id: 'finance' as Page, label: 'Financeiro', icon: ClipboardCheck },
-    { id: 'crm' as Page, label: 'Comercial · CRM', icon: Users, count: '8' },
-    { id: 'inventory' as Page, label: 'Estoque', icon: FolderOpen },
+  { label: 'ADMINISTRATIVO', items: [
+    { id: 'administration' as Page, label: 'Painel administrativo', icon: Settings },
+    { id: 'people' as Page, label: 'Perfis e acessos', icon: Users },
+    { id: 'documents' as Page, label: 'Documentos', icon: FolderOpen },
+  ] },
+  { label: 'COMERCIAL', items: [
+    { id: 'crm' as Page, label: 'CRM', icon: Filter, count: '9' },
+  ] },
+  { label: 'FINANCEIRO', items: [
+    { id: 'finance' as Page, label: 'Painel financeiro', icon: TrendingUp },
+    { id: 'cashflow' as Page, label: 'Fluxo de caixa', icon: ArrowLeftRight },
     { id: 'invoices' as Page, label: 'Notas fiscais', icon: FileText, count: '3' },
   ] },
-  { label: 'ADMINISTRAÇÃO', items: [
-    { id: 'administration' as Page, label: 'Administrativo', icon: Settings },
-    { id: 'documents' as Page, label: 'Documentos', icon: FolderOpen },
-    { id: 'people' as Page, label: 'Pessoas e acessos', icon: Users },
+  { label: 'OPERACIONAL', items: [
+    { id: 'projects' as Page, label: 'Obras', icon: Building2, count: '4' },
+    { id: 'inventory' as Page, label: 'Estoque', icon: Package },
   ] },
 ]
 
@@ -56,7 +64,7 @@ function StatusBadge({ status }: { status: Project['status'] }) {
   return <span className={`status status-${status.toLowerCase().replace(' ', '-')}`}><span />{status}</span>
 }
 
-function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout }: {
+function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, crmCount }: {
   page: Page
   setPage: (page: Page) => void
   view: ViewMode
@@ -65,6 +73,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout }
   onClose: () => void
   role: Role
   onLogout: () => void
+  crmCount: number
 }) {
   const profile = role === 'engineer'
     ? { initials: 'RC', name: 'Rafael Costa', label: 'Engenheiro' }
@@ -81,7 +90,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout }
         <ChevronDown size={16} />
       </div>
       <nav className="main-nav">
-        {navGroups.map((group, index) => <div className="nav-group" key={group.label}><p className={`nav-label ${index ? 'nav-label-spaced' : ''}`}>{group.label}</p>{group.items.map(({ id, label, icon: Icon, count }) => <button key={id} className={page === id && view === 'company' ? 'active' : ''} onClick={() => { setPage(id); setView('company'); onClose() }}><Icon size={19} /><span>{label}</span>{count && <em>{count}</em>}</button>)}</div>)}
+        {navGroups.map((group, index) => <div className="nav-group" key={group.label}><p className={`nav-label ${index ? 'nav-label-spaced' : ''}`}>{group.label}</p>{group.items.map(({ id, label, icon: Icon, count }) => <button key={id} className={page === id && view === 'company' ? 'active' : ''} onClick={() => { setPage(id); setView('company'); onClose() }}><Icon size={19} /><span>{label}</span>{count && <em>{id === 'crm' ? crmCount : count}</em>}</button>)}</div>)}
         <p className="nav-label nav-label-spaced">CONTA</p>
         <button className={page === 'settings' ? 'active' : ''} onClick={() => { setPage('settings'); setView('company'); onClose() }}>
           <Settings size={19} /><span>Configurações</span>
@@ -171,7 +180,7 @@ function Dashboard({ updates, onOpenProject, onNewUpdate, onMenu, onNavigate }: 
           <MetricCard label="Pipeline comercial" value="R$ 1,48 mi" helper="18 oportunidades abertas" icon={Users} tone="cyan" />
         </section>
 
-        <section className="admin-dashboard-shortcuts"><button onClick={() => onNavigate('finance')}><span className="admin-shortcut-icon finance"><ClipboardCheck size={20} /></span><div><strong>Financeiro</strong><small>R$ 184 mil a receber</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('crm')}><span className="admin-shortcut-icon crm"><Users size={20} /></span><div><strong>Comercial · CRM</strong><small>8 propostas em negociação</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('inventory')}><span className="admin-shortcut-icon stock"><FolderOpen size={20} /></span><div><strong>Estoque</strong><small>7 itens com saldo baixo</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('invoices')}><span className="admin-shortcut-icon invoice"><FileText size={20} /></span><div><strong>Notas fiscais</strong><small>3 aguardando vínculo</small></div><ChevronRight size={17} /></button></section>
+        <section className="admin-dashboard-shortcuts"><button onClick={() => onNavigate('finance')}><span className="admin-shortcut-icon finance"><ClipboardCheck size={20} /></span><div><strong>Financeiro</strong><small>R$ 184 mil a receber</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('crm')}><span className="admin-shortcut-icon crm"><Users size={20} /></span><div><strong>CRM</strong><small>9 leads ativos no funil</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('inventory')}><span className="admin-shortcut-icon stock"><FolderOpen size={20} /></span><div><strong>Estoque</strong><small>7 itens com saldo baixo</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('invoices')}><span className="admin-shortcut-icon invoice"><FileText size={20} /></span><div><strong>Notas fiscais</strong><small>3 aguardando vínculo</small></div><ChevronRight size={17} /></button></section>
 
         <section className="section-block">
           <div className="section-heading"><div><h2>Obras em andamento</h2><p>Acompanhe o progresso e as próximas entregas.</p></div><button className="text-button">Ver todas <ChevronRight size={16} /></button></div>
@@ -215,15 +224,17 @@ function ProjectsPage({ onOpenProject, onMenu }: { onOpenProject: (project: Proj
   )
 }
 
-function AdminModulePage({ page, onMenu }: { page: Page; onMenu: () => void }) {
+function AdminModulePage({ page, onMenu, onNavigate, leads, setLeads }: { page: Page; onMenu: () => void; onNavigate: (page: Page) => void; leads: Lead[]; setLeads: Dispatch<SetStateAction<Lead[]>> }) {
   const [invoiceSaved, setInvoiceSaved] = useState(false)
   const [invoiceForm, setInvoiceForm] = useState({ number: '', supplier: '', project: projects[0].name, value: '' })
   const titles: Partial<Record<Page, { title: string; subtitle: string }>> = {
-    finance: { title: 'Financeiro', subtitle: 'Visão consolidada das receitas, despesas e resultados da empresa.' },
-    crm: { title: 'Comercial · CRM', subtitle: 'Gerencie oportunidades desde o primeiro contato até o fechamento.' },
+    finance: { title: 'Painel financeiro', subtitle: 'Receitas, despesas e resultado da empresa, com comparativo entre anos.' },
+    cashflow: { title: 'Fluxo de caixa', subtitle: 'Entradas, saídas e saldo de caixa mês a mês.' },
+    crm: { title: 'CRM', subtitle: 'Acompanhe cada lead do primeiro contato ao fechamento.' },
     inventory: { title: 'Estoque', subtitle: 'Controle entradas, saídas, saldos e materiais vinculados às obras.' },
     invoices: { title: 'Notas fiscais', subtitle: 'Cadastre documentos fiscais e vincule os custos às obras.' },
-    administration: { title: 'Administrativo', subtitle: 'Estrutura da empresa, contratos, acessos e rotinas internas.' },
+    administration: { title: 'Painel administrativo', subtitle: 'Estrutura da empresa, contratos, acessos e rotinas internas.' },
+    people: { title: 'Perfis e acessos', subtitle: 'Gerencie administradores, engenheiros, equipe de campo e clientes.' },
   }
   const title = titles[page] ?? { title: 'Gestão', subtitle: '' }
   const saveInvoice = (event: FormEvent) => {
@@ -237,16 +248,16 @@ function AdminModulePage({ page, onMenu }: { page: Page; onMenu: () => void }) {
       <Header title={title.title} subtitle={title.subtitle} onMenu={onMenu} />
       <main className="content admin-module-content">
         {page === 'finance' && <>
-          <section className="admin-summary-grid"><article><span className="admin-summary-icon revenue"><Sparkles size={20} /></span><div><small>RECEITA CONTRATADA</small><strong>R$ 948.000</strong><p>+12,4% no trimestre</p></div></article><article><span className="admin-summary-icon expense"><ClipboardCheck size={20} /></span><div><small>DESPESAS REALIZADAS</small><strong>R$ 612.450</strong><p>64,6% do contratado</p></div></article><article><span className="admin-summary-icon result"><CheckCircle2 size={20} /></span><div><small>RESULTADO PROJETADO</small><strong>R$ 335.550</strong><p>Margem prevista de 35,4%</p></div></article><article><span className="admin-summary-icon receive"><CalendarDays size={20} /></span><div><small>A RECEBER</small><strong>R$ 184.300</strong><p>Nos próximos 30 dias</p></div></article></section>
-          <section className="admin-two-columns"><div className="admin-panel"><div className="admin-panel-heading"><div><h2>Fluxo financeiro</h2><p>Receitas e despesas dos últimos seis meses.</p></div><button>Últimos 6 meses <ChevronDown size={14} /></button></div><div className="cashflow-chart">{[{ m: 'ABR', r: 68, e: 49 }, { m: 'MAI', r: 78, e: 55 }, { m: 'JUN', r: 62, e: 48 }, { m: 'JUL', r: 88, e: 61 }, { m: 'AGO', r: 74, e: 58 }, { m: 'SET', r: 92, e: 64 }].map(item => <div key={item.m}><span className="chart-bars"><i style={{ height: `${item.r}%` }} /><b style={{ height: `${item.e}%` }} /></span><small>{item.m}</small></div>)}</div><div className="chart-legend"><span><i className="revenue" />Receitas</span><span><i className="expense" />Despesas</span></div></div><aside className="admin-panel"><div className="admin-panel-heading"><div><h2>Contas a vencer</h2><p>Próximos compromissos.</p></div><span className="number-badge">4</span></div><div className="due-list"><div><span>02 OUT</span><p><strong>Concreto Usinado Brasil</strong><small>Residência Alto de Pinheiros</small></p><b>R$ 18.450</b></div><div><span>05 OUT</span><p><strong>Folha de prestadores</strong><small>3 obras vinculadas</small></p><b>R$ 42.800</b></div><div><span>08 OUT</span><p><strong>Elétrica Nova Luz</strong><small>Clínica Vila Madalena</small></p><b>R$ 9.720</b></div></div></aside></section>
-          <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Resultado por obra</h2><p>Receita, custo e margem projetada.</p></div><button>Exportar relatório</button></div><div className="finance-project-table"><div className="admin-table-head"><span>OBRA</span><span>CONTRATO</span><span>REALIZADO</span><span>MARGEM</span><span>STATUS</span></div>{projects.map(project => <article key={project.id}><div><strong>{project.name}</strong><small>{project.client}</small></div><span>R$ {project.id === 1 ? '320.000' : project.id === 2 ? '278.000' : project.id === 3 ? '210.000' : '140.000'}</span><span>R$ {project.id === 1 ? '188.400' : project.id === 2 ? '195.700' : project.id === 3 ? '156.200' : '72.150'}</span><strong>{project.id === 2 ? '29,6%' : '35,8%'}</strong><StatusBadge status={project.status} /></article>)}</div></section>
+          <FinanceOverview />
+          <div className="viz-section-heading"><h2>Posição atual</h2><p>Obras em andamento e compromissos de outubro de 2026.</p></div>
+          <section className="admin-two-columns finance-current"><section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Resultado por obra</h2><p>Receita, custo e margem projetada.</p></div><button>Exportar relatório</button></div><div className="finance-project-table"><div className="admin-table-head"><span>OBRA</span><span>CONTRATO</span><span>REALIZADO</span><span>MARGEM</span><span>STATUS</span></div>{projects.map(project => <article key={project.id}><div><strong>{project.name}</strong><small>{project.client}</small></div><span>R$ {project.id === 1 ? '320.000' : project.id === 2 ? '278.000' : project.id === 3 ? '210.000' : '140.000'}</span><span>R$ {project.id === 1 ? '188.400' : project.id === 2 ? '195.700' : project.id === 3 ? '156.200' : '72.150'}</span><strong>{project.id === 2 ? '29,6%' : '35,8%'}</strong><StatusBadge status={project.status} /></article>)}</div></section><aside className="admin-panel"><div className="admin-panel-heading"><div><h2>Contas a vencer</h2><p>Próximos compromissos.</p></div><span className="number-badge">4</span></div><div className="due-list"><div><span>02 OUT</span><p><strong>Concreto Usinado Brasil</strong><small>Residência Alto de Pinheiros</small></p><b>R$ 18.450</b></div><div><span>05 OUT</span><p><strong>Folha de prestadores</strong><small>3 obras vinculadas</small></p><b>R$ 42.800</b></div><div><span>08 OUT</span><p><strong>Elétrica Nova Luz</strong><small>Clínica Vila Madalena</small></p><b>R$ 9.720</b></div></div></aside></section>
         </>}
 
-        {page === 'crm' && <>
-          <section className="crm-summary"><article><small>PIPELINE TOTAL</small><strong>R$ 1.480.000</strong><p>18 oportunidades abertas</p></article><article><small>PROPOSTAS ENVIADAS</small><strong>8</strong><p>R$ 620.000 em negociação</p></article><article><small>TAXA DE CONVERSÃO</small><strong>32%</strong><p>+4,2% no trimestre</p></article><article><small>FECHADO NO MÊS</small><strong>R$ 285.000</strong><p>3 novos contratos</p></article></section>
-          <div className="crm-toolbar"><div><button className="active">Pipeline</button><button>Contatos</button><button>Atividades</button></div><button className="primary-button"><Plus size={17} />Nova oportunidade</button></div>
-          <section className="crm-board">{[{ title: 'Novos contatos', total: 'R$ 310 mil', tone: 'new', cards: [['Residência Jardins', 'Paulo Mendes', 'R$ 180.000'], ['Reforma Vila Nova', 'Fernanda Lima', 'R$ 130.000']] }, { title: 'Proposta enviada', total: 'R$ 420 mil', tone: 'proposal', cards: [['Clínica Orbe II', 'Grupo Orbe Saúde', 'R$ 240.000'], ['Casa Alphaville', 'Roberto Alves', 'R$ 180.000']] }, { title: 'Negociação', total: 'R$ 510 mil', tone: 'negotiation', cards: [['Edifício Horizonte', 'Incorporadora Atlas', 'R$ 390.000'], ['Loja Conceito', 'Studio Forma', 'R$ 120.000']] }, { title: 'Fechado', total: 'R$ 240 mil', tone: 'won', cards: [['Residência Moema', 'Carla Souza', 'R$ 150.000'], ['Escritório Tech', 'Nexo Sistemas', 'R$ 90.000']] }].map(column => <div className={`crm-column ${column.tone}`} key={column.title}><header><span><i />{column.title}</span><strong>{column.total}</strong></header>{column.cards.map(card => <article key={card[0]}><span className="crm-card-type">OBRA</span><h3>{card[0]}</h3><p>{card[1]}</p><strong>{card[2]}</strong><footer><span className="avatar">{card[1].split(' ').map(word => word[0]).slice(0, 2).join('')}</span><small>Próxima ação em 2 dias</small></footer></article>)}</div>)}</section>
-        </>}
+        {page === 'cashflow' && <CashFlow />}
+
+        {page === 'crm' && <CrmBoard leads={leads} setLeads={setLeads} />}
+
+        {page === 'people' && <ProfilesPage />}
 
         {page === 'inventory' && <>
           <section className="admin-summary-grid inventory-summary"><article><span className="admin-summary-icon revenue"><FolderOpen size={20} /></span><div><small>VALOR EM ESTOQUE</small><strong>R$ 86.420</strong><p>Distribuído em 4 obras</p></div></article><article><span className="admin-summary-icon receive"><ClipboardCheck size={20} /></span><div><small>ITENS CADASTRADOS</small><strong>184</strong><p>32 categorias</p></div></article><article><span className="admin-summary-icon expense"><Bell size={20} /></span><div><small>ESTOQUE BAIXO</small><strong>7</strong><p>Precisam de reposição</p></div></article><article><span className="admin-summary-icon result"><CheckCircle2 size={20} /></span><div><small>MOVIMENTAÇÕES</small><strong>46</strong><p>Nos últimos 7 dias</p></div></article></section>
@@ -257,7 +268,7 @@ function AdminModulePage({ page, onMenu }: { page: Page; onMenu: () => void }) {
         {page === 'invoices' && <section className="invoice-layout"><div><section className="admin-summary-grid invoice-summary"><article><span className="admin-summary-icon revenue"><FileText size={20} /></span><div><small>NOTAS NO MÊS</small><strong>38</strong><p>R$ 142.680 lançados</p></div></article><article><span className="admin-summary-icon expense"><Clock3 size={20} /></span><div><small>AGUARDANDO VÍNCULO</small><strong>3</strong><p>Precisam de uma obra</p></div></article><article><span className="admin-summary-icon result"><CheckCircle2 size={20} /></span><div><small>PROCESSADAS</small><strong>35</strong><p>92% do período</p></div></article></section><section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Notas fiscais recentes</h2><p>Documentos lançados e vinculados às obras.</p></div><button>Exportar</button></div><div className="invoice-table"><div className="admin-table-head"><span>NOTA / FORNECEDOR</span><span>OBRA</span><span>EMISSÃO</span><span>VALOR</span><span>STATUS</span></div>{[{ n: 'NF 008742', supplier: 'Concreto Usinado Brasil', project: 'Alto de Pinheiros', date: '29 set 2026', value: 'R$ 18.450', status: 'Vinculada' }, { n: 'NF 001285', supplier: 'Elétrica Nova Luz', project: 'Clínica Vila Madalena', date: '28 set 2026', value: 'R$ 9.720', status: 'Vinculada' }, { n: 'NF 004921', supplier: 'Depósito Central', project: 'Sem vínculo', date: '28 set 2026', value: 'R$ 4.380', status: 'Pendente' }, { n: 'NF 000938', supplier: 'Vidraçaria Cristal', project: 'Edifício Aurora', date: '27 set 2026', value: 'R$ 12.640', status: 'Vinculada' }].map(note => <article key={note.n}><div><strong>{note.n}</strong><small>{note.supplier}</small></div><span>{note.project}</span><span>{note.date}</span><strong>{note.value}</strong><em className={note.status === 'Vinculada' ? 'linked' : 'pending'}>{note.status}</em></article>)}</div></section></div><form className="invoice-form" onSubmit={saveInvoice}><div className="diary-form-heading"><span><FileText size={20} /></span><div><strong>Anexar nota fiscal</strong><small>Vincule o custo diretamente à obra</small></div></div><button type="button" className="invoice-upload"><Upload size={22} /><span><strong>Selecionar XML ou PDF</strong><small>Arraste o arquivo ou clique para procurar</small></span></button><label>Número da nota<input required value={invoiceForm.number} onChange={event => { setInvoiceForm(current => ({ ...current, number: event.target.value })); setInvoiceSaved(false) }} placeholder="Ex.: 008743" /></label><label>Fornecedor<input required value={invoiceForm.supplier} onChange={event => setInvoiceForm(current => ({ ...current, supplier: event.target.value }))} placeholder="Razão social ou nome fantasia" /></label><label>Vincular à obra<select value={invoiceForm.project} onChange={event => setInvoiceForm(current => ({ ...current, project: event.target.value }))}>{projects.map(project => <option key={project.id}>{project.name}</option>)}</select></label><label>Valor total<input required value={invoiceForm.value} onChange={event => setInvoiceForm(current => ({ ...current, value: event.target.value }))} placeholder="R$ 0,00" /></label>{invoiceSaved && <div className="request-success"><CheckCircle2 size={18} />Nota fiscal anexada e vinculada à obra.</div>}<button className="primary-button invoice-submit" type="submit"><Check size={17} />Salvar nota fiscal</button></form></section>}
 
         {page === 'administration' && <>
-          <section className="administration-cards"><button><span><Users size={21} /></span><div><strong>Colaboradores</strong><small>18 usuários ativos</small></div><ChevronRight size={17} /></button><button><span><ShieldCheck size={21} /></span><div><strong>Perfis e permissões</strong><small>4 níveis de acesso</small></div><ChevronRight size={17} /></button><button><span><FileText size={21} /></span><div><strong>Contratos da empresa</strong><small>12 documentos vigentes</small></div><ChevronRight size={17} /></button><button><span><Building2 size={21} /></span><div><strong>Fornecedores</strong><small>36 empresas cadastradas</small></div><ChevronRight size={17} /></button></section><section className="admin-two-columns administration-columns"><div className="admin-panel"><div className="admin-panel-heading"><div><h2>Equipe administrativa</h2><p>Usuários e responsabilidades.</p></div><button>Gerenciar acessos</button></div><div className="admin-people-list">{[['FS', 'Felipe Sales', 'Administrador', 'Acesso completo'], ['AP', 'Ana Prado', 'Financeiro', 'Financeiro e notas fiscais'], ['RC', 'Rafael Costa', 'Engenheiro', '3 obras'], ['CN', 'Camila Nunes', 'Engenheira', '2 obras']].map(person => <div key={person[1]}><span className="avatar">{person[0]}</span><div><strong>{person[1]}</strong><small>{person[2]} · {person[3]}</small></div><em>Ativo</em><button className="icon-button"><MoreHorizontal size={17} /></button></div>)}</div></div><aside className="admin-panel"><div className="admin-panel-heading"><div><h2>Rotinas administrativas</h2><p>Pendências da empresa.</p></div></div><div className="admin-routine-list"><div><span className="pending-dot urgent" /><p><strong>Renovar seguro empresarial</strong><small>Vence em 5 dias</small></p></div><div><span className="pending-dot warning" /><p><strong>Revisar contrato de fornecedor</strong><small>Depósito Central</small></p></div><div><span className="pending-dot info" /><p><strong>Conferir documentação trabalhista</strong><small>3 prestadores pendentes</small></p></div></div></aside></section>
+          <section className="administration-cards"><button onClick={() => onNavigate('people')}><span><Users size={21} /></span><div><strong>Pessoas</strong><small>12 pessoas com acesso</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('people')}><span><ShieldCheck size={21} /></span><div><strong>Perfis e permissões</strong><small>5 perfis de acesso</small></div><ChevronRight size={17} /></button><button><span><FileText size={21} /></span><div><strong>Contratos da empresa</strong><small>12 documentos vigentes</small></div><ChevronRight size={17} /></button><button><span><Building2 size={21} /></span><div><strong>Fornecedores</strong><small>36 empresas cadastradas</small></div><ChevronRight size={17} /></button></section><section className="admin-two-columns administration-columns"><div className="admin-panel"><div className="admin-panel-heading"><div><h2>Equipe administrativa</h2><p>Usuários e responsabilidades.</p></div><button onClick={() => onNavigate('people')}>Gerenciar acessos</button></div><div className="admin-people-list">{[['FS', 'Felipe Sales', 'Administrador', 'Acesso completo'], ['AP', 'Ana Prado', 'Financeiro', 'Financeiro e notas fiscais'], ['RC', 'Rafael Costa', 'Engenheiro', '3 obras'], ['CN', 'Camila Nunes', 'Engenheira', '2 obras']].map(person => <div key={person[1]}><span className="avatar">{person[0]}</span><div><strong>{person[1]}</strong><small>{person[2]} · {person[3]}</small></div><em>Ativo</em><button className="icon-button"><MoreHorizontal size={17} /></button></div>)}</div></div><aside className="admin-panel"><div className="admin-panel-heading"><div><h2>Rotinas administrativas</h2><p>Pendências da empresa.</p></div></div><div className="admin-routine-list"><div><span className="pending-dot urgent" /><p><strong>Renovar seguro empresarial</strong><small>Vence em 5 dias</small></p></div><div><span className="pending-dot warning" /><p><strong>Revisar contrato de fornecedor</strong><small>Depósito Central</small></p></div><div><span className="pending-dot info" /><p><strong>Conferir documentação trabalhista</strong><small>3 prestadores pendentes</small></p></div></div></aside></section>
         </>}
       </main>
     </>
@@ -268,8 +279,9 @@ function GenericPage({ page, updates, onMenu }: { page: Page; updates: Update[];
   const map: Record<Page, { title: string; subtitle: string; icon: typeof FileText }> = {
     dashboard: { title: 'Visão geral', subtitle: '', icon: LayoutDashboard },
     projects: { title: 'Obras', subtitle: '', icon: Building2 },
-    finance: { title: 'Financeiro', subtitle: 'Gestão financeira consolidada.', icon: ClipboardCheck },
-    crm: { title: 'Comercial · CRM', subtitle: 'Oportunidades comerciais e propostas.', icon: Users },
+    finance: { title: 'Painel financeiro', subtitle: 'Gestão financeira consolidada.', icon: TrendingUp },
+    cashflow: { title: 'Fluxo de caixa', subtitle: 'Entradas, saídas e saldo de caixa.', icon: ArrowLeftRight },
+    crm: { title: 'CRM', subtitle: 'Leads e propostas comerciais.', icon: Filter },
     inventory: { title: 'Estoque', subtitle: 'Materiais e equipamentos.', icon: FolderOpen },
     invoices: { title: 'Notas fiscais', subtitle: 'Documentos fiscais vinculados às obras.', icon: FileText },
     administration: { title: 'Administrativo', subtitle: 'Rotinas e estrutura da empresa.', icon: Settings },
@@ -792,6 +804,7 @@ export default function App() {
   const [page, setPage] = useState<Page>('dashboard')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [updates, setUpdates] = useState<Update[]>(initialUpdates)
+  const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [modal, setModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const currentProject = useMemo(() => selectedProject ?? projects[0], [selectedProject])
@@ -808,13 +821,13 @@ export default function App() {
 
   return (
     <div className={`app-shell ${menuOpen ? 'menu-open' : ''}`}>
-      <Sidebar page={page} setPage={(next) => { setPage(next); setSelectedProject(null) }} view={view} setView={setView} open={menuOpen} onClose={() => setMenuOpen(false)} role={role} onLogout={logout} />
+      <Sidebar page={page} setPage={(next) => { setPage(next); setSelectedProject(null) }} view={view} setView={setView} open={menuOpen} onClose={() => setMenuOpen(false)} role={role} onLogout={logout} crmCount={leads.filter(isOpenLead).length} />
       {menuOpen && <button className="sidebar-overlay" onClick={() => setMenuOpen(false)} aria-label="Fechar menu" />}
       <div className="main-shell">
         {selectedProject ? <ProjectDetail project={selectedProject} updates={updates} onBack={() => setSelectedProject(null)} onClient={() => setView('client')} onNewUpdate={() => setModal(true)} /> :
           page === 'dashboard' ? <Dashboard updates={updates} onOpenProject={openProject} onNewUpdate={() => setModal(true)} onMenu={() => setMenuOpen(true)} onNavigate={setPage} /> :
             page === 'projects' ? <ProjectsPage onOpenProject={openProject} onMenu={() => setMenuOpen(true)} /> :
-              (['finance', 'crm', 'inventory', 'invoices', 'administration'] as Page[]).includes(page) ? <AdminModulePage page={page} onMenu={() => setMenuOpen(true)} /> : <GenericPage page={page} updates={updates} onMenu={() => setMenuOpen(true)} />}
+              (['finance', 'cashflow', 'crm', 'inventory', 'invoices', 'administration', 'people'] as Page[]).includes(page) ? <AdminModulePage page={page} onMenu={() => setMenuOpen(true)} onNavigate={setPage} leads={leads} setLeads={setLeads} /> : <GenericPage page={page} updates={updates} onMenu={() => setMenuOpen(true)} />}
       </div>
       {modal && <NewUpdateModal onClose={() => setModal(false)} onSave={saveUpdate} />}
     </div>
