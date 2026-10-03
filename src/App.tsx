@@ -1,10 +1,10 @@
-import { useMemo, useState, type CSSProperties, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import {
   Bell, Building2, Camera, CalendarDays, Check, CheckCircle2, ChevronDown,
   ChevronLeft, ChevronRight, ClipboardCheck, Clock3, FileText, FolderOpen,
   HardHat, Home, Image, LayoutDashboard, LockKeyhole, LogOut, Mail, Menu,
-  MessageCircle, MoreHorizontal, Plus, Search, Settings, ShieldCheck,
-  Smartphone, Sparkles, Upload, UserRound, Users, X,
+  MessageCircle, Mic, MoreHorizontal, Pause, Play, Plus, Search, Send, Settings,
+  ShieldCheck, Smartphone, Sparkles, Trash2, Upload, UserRound, Users, X,
 } from './icons'
 import { initialUpdates, projects, type Project, type Update } from './data'
 
@@ -350,8 +350,8 @@ function LoginScreen({ onLogin }: { onLogin: (role: Role) => void }) {
         <Logo />
         <div className="login-brand-copy">
           <span className="login-kicker">ENGENHARIA · TECNOLOGIA · CONEXÃO</span>
-          <h1>Sua obra inteira. Todas as pessoas. Um só lugar.</h1>
-          <p>A Vértia une empresa, engenharia, equipe de campo e cliente na mesma plataforma — do primeiro registro à entrega da obra.</p>
+          <h1>Tudo da obra em um só lugar.</h1>
+          <p>A Vértia une empresa, engenharia, equipe de campo e cliente na mesma plataforma, do primeiro registro à entrega da obra.</p>
         </div>
         <div className="login-principles">
           <div><Building2 size={19} /><span><strong>Uma obra, uma única verdade</strong><small>Registros, documentos e decisões sempre conectados</small></span></div>
@@ -379,11 +379,50 @@ function LoginScreen({ onLogin }: { onLogin: (role: Role) => void }) {
   )
 }
 
+type ChatMessage = { id: number; author: string; time: string; mine: boolean; text?: string; audio?: { seconds: number; url?: string } }
+
+const audioBars = [35, 60, 45, 80, 55, 30, 70, 95, 50, 40, 75, 60, 35, 85, 65, 45, 30, 55, 90, 70, 40, 60, 50, 35, 75, 45, 30, 55]
+const formatSeconds = (value: number) => `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, '0')}`
+
+function AudioMessage({ seconds, url }: { seconds: number; url?: string }) {
+  const [playing, setPlaying] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  useEffect(() => {
+    if (!playing) return
+    if (!url) {
+      const timer = window.setInterval(() => setElapsed(current => current + 0.1), 100)
+      return () => window.clearInterval(timer)
+    }
+    const audio = audioRef.current ?? new Audio(url)
+    audioRef.current = audio
+    const onTime = () => setElapsed(audio.currentTime)
+    const onEnded = () => { setPlaying(false); setElapsed(0) }
+    audio.addEventListener('timeupdate', onTime)
+    audio.addEventListener('ended', onEnded)
+    audio.play().catch(() => setPlaying(false))
+    return () => { audio.pause(); audio.removeEventListener('timeupdate', onTime); audio.removeEventListener('ended', onEnded) }
+  }, [playing, url])
+
+  useEffect(() => {
+    if (!url && playing && elapsed >= seconds) { setPlaying(false); setElapsed(0) }
+  }, [url, playing, elapsed, seconds])
+
+  const progress = Math.min(elapsed / seconds, 1)
+  return (
+    <div className="fm-audio">
+      <button type="button" onClick={() => setPlaying(current => !current)} aria-label={playing ? 'Pausar áudio' : 'Ouvir áudio'}>{playing ? <Pause size={22} strokeWidth={3} /> : <Play size={22} fill="currentColor" />}</button>
+      <div><div className="fm-audio-wave">{audioBars.map((height, index) => <i key={index} className={index < progress * audioBars.length ? 'played' : ''} style={{ height: `${height}%` }} />)}</div><span className="fm-audio-time">{formatSeconds(elapsed > 0 ? elapsed : seconds)}</span></div>
+    </div>
+  )
+}
+
 function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project[]; onLogout: () => void }) {
-  type FieldView = 'home' | 'messages' | 'materials' | 'measurement' | 'profile'
+  type FieldView = 'messages' | 'materials' | 'measurement' | 'profile'
   type ChatRoom = 'engineer' | 'site'
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
-  const [view, setView] = useState<FieldView>('home')
+  const [view, setView] = useState<FieldView>('messages')
   const [chatRoom, setChatRoom] = useState<ChatRoom>('engineer')
   const [message, setMessage] = useState('')
   const [material, setMaterial] = useState('')
@@ -392,15 +431,25 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
   const [details, setDetails] = useState('')
   const [urgent, setUrgent] = useState(false)
   const [requestSent, setRequestSent] = useState(false)
-  const [messages, setMessages] = useState({
+  const [recording, setRecording] = useState(false)
+  const [recordSeconds, setRecordSeconds] = useState(0)
+  const [unreadSite, setUnreadSite] = useState(3)
+  const recorderRef = useRef<MediaRecorder | null>(null)
+  const recordTimerRef = useRef<number | undefined>(undefined)
+  const startingRef = useRef(false)
+  const aliveRef = useRef(true)
+  const messagesRef = useRef<HTMLDivElement | null>(null)
+  const [messages, setMessages] = useState<Record<ChatRoom, ChatMessage[]>>({
     engineer: [
       { id: 1, author: 'Rafael Costa', text: 'Bom dia, João. Consegue conferir a chegada dos blocos?', time: '08:12', mine: false },
       { id: 2, author: 'Você', text: 'Bom dia! Vou conferir e envio uma foto assim que descarregarem.', time: '08:16', mine: true },
+      { id: 3, author: 'Rafael Costa', audio: { seconds: 14 }, time: '08:20', mine: false },
     ],
     site: [
       { id: 1, author: 'Carlos · Mestre de obras', text: 'Equipe, hoje começamos pela alvenaria do pavimento térreo.', time: '07:05', mine: false },
       { id: 2, author: 'Marcos · Eletricista', text: 'Material elétrico já está no almoxarifado.', time: '07:18', mine: false },
       { id: 3, author: 'Você', text: 'Certo, estou chegando no setor A.', time: '07:22', mine: true },
+      { id: 4, author: 'Carlos · Mestre de obras', audio: { seconds: 9 }, time: '07:30', mine: false },
     ],
   })
   const [requests, setRequests] = useState([
@@ -410,7 +459,62 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
   const project = assignedProjects.find(item => item.id === selectedProjectId) ?? assignedProjects[0]
   const managerInitials = project.manager.split(' ').slice(0, 2).map(name => name[0]).join('')
 
-  const openChat = (room: ChatRoom) => { setChatRoom(room); setView('messages') }
+  useEffect(() => {
+    aliveRef.current = true
+    return () => {
+      aliveRef.current = false
+      window.clearInterval(recordTimerRef.current)
+      recorderRef.current?.stream.getTracks().forEach(track => track.stop())
+    }
+  }, [])
+  useEffect(() => {
+    const list = messagesRef.current
+    if (list) list.scrollTop = list.scrollHeight
+  }, [messages, chatRoom, view, selectedProjectId])
+
+  const startRecording = async () => {
+    if (recording || startingRef.current) return
+    startingRef.current = true
+    let recorder: MediaRecorder | null = null
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      if (!aliveRef.current) { stream.getTracks().forEach(track => track.stop()); return }
+      recorder = new MediaRecorder(stream)
+      recorder.start()
+    } catch {
+      // Sem microfone ou sem permissão, o protótipo simula a gravação.
+      recorder = null
+    }
+    startingRef.current = false
+    if (!aliveRef.current) return
+    recorderRef.current = recorder
+    setRecordSeconds(0)
+    setRecording(true)
+    recordTimerRef.current = window.setInterval(() => setRecordSeconds(current => current + 1), 1000)
+  }
+  const stopRecording = (send: boolean) => {
+    if (!recording) return
+    window.clearInterval(recordTimerRef.current)
+    const recorder = recorderRef.current
+    recorderRef.current = null
+    const seconds = Math.max(recordSeconds, 1)
+    const room = chatRoom
+    const addAudio = (url?: string) => setMessages(current => ({
+      ...current,
+      [room]: [...current[room], { id: Date.now(), author: 'Você', time: 'Agora', mine: true, audio: { seconds, url } }],
+    }))
+    if (recorder) {
+      recorder.ondataavailable = event => { if (send) addAudio(event.data.size > 0 ? URL.createObjectURL(event.data) : undefined) }
+      recorder.onstop = () => recorder.stream.getTracks().forEach(track => track.stop())
+      recorder.stop()
+    } else if (send) addAudio()
+    setRecording(false)
+    setRecordSeconds(0)
+  }
+
+  const goTo = (next: FieldView) => { stopRecording(false); setView(next) }
+  const selectRoom = (room: ChatRoom) => { stopRecording(false); setChatRoom(room); if (room === 'site') setUnreadSite(0) }
+  const openChat = (room: ChatRoom) => { selectRoom(room); setView('messages') }
   const sendMessage = (event: FormEvent) => {
     event.preventDefault()
     const text = message.trim()
@@ -436,13 +540,14 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
 
   const chooseProject = (projectId: number) => {
     setSelectedProjectId(projectId)
-    setView('home')
+    setView('messages')
     setChatRoom('engineer')
+    setUnreadSite(3)
     setRequestSent(false)
   }
 
   if (selectedProjectId === null) return (
-    <div className="field-app field-project-picker-app">
+    <div className="field-app field-project-picker-app field-mobile-picker">
       <header className="field-header"><Logo compact /><button className="icon-button" onClick={onLogout} title="Sair"><LogOut size={19} /></button></header>
       <main className="field-main project-picker-main">
         <section className="project-picker-heading"><span>ÁREA DO PRESTADOR</span><h1>Escolha uma obra</h1><p>Selecione onde você vai trabalhar agora. As conversas, solicitações e medições serão exibidas de acordo com a obra escolhida.</p></section>
@@ -453,27 +558,27 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
   )
 
   return (
-    <div className="field-app">
-      <header className="field-header"><Logo compact /><button className="field-header-project" onClick={() => setSelectedProjectId(null)}><Building2 size={16} /><span><small>OBRA ATUAL · TROCAR</small><strong>{project.name}</strong></span><ChevronDown size={14} /></button><button className="icon-button" onClick={onLogout} title="Sair"><LogOut size={19} /></button></header>
-      <main className="field-main">
-        {view === 'home' && <>
-          <section className="field-greeting"><div><span>SEGUNDA-FEIRA, 29 DE SETEMBRO</span><h1>Bom dia, João</h1><p>Tudo o que você precisa para o trabalho de hoje.</p></div><div className="avatar large">JM</div></section>
-          <section className="field-project"><div className="field-project-top"><span className="field-project-icon"><Building2 size={20} /></span><div><small>SUA OBRA</small><strong>{project.name}</strong><p>{project.location}</p></div><ChevronRight size={18} /></div><div className="field-project-progress"><div><span>Progresso geral</span><strong>{project.progress}%</strong></div><div className="progress-track"><span style={{ width: `${project.progress}%` }} /></div></div></section>
-          <section className="field-section"><div className="field-section-heading"><h2>Acessos da obra</h2><span>Comunicação e materiais</span></div><div className="field-access-grid">
-            <button onClick={() => openChat('engineer')}><span className="field-access-icon engineer"><HardHat size={23} /></span><div><strong>Falar com engenheiro</strong><small>{project.manager} · disponível</small></div><span className="online-dot" /><ChevronRight size={17} /></button>
-            <button onClick={() => openChat('site')}><span className="field-access-icon team"><Users size={23} /></span><div><strong>Chat da obra</strong><small>12 participantes · 3 novas</small></div><em>3</em><ChevronRight size={17} /></button>
-            <button onClick={() => setView('materials')}><span className="field-access-icon material"><ClipboardCheck size={23} /></span><div><strong>Solicitar material</strong><small>Faça e acompanhe seus pedidos</small></div><ChevronRight size={17} /></button>
-            <button onClick={() => setView('measurement')}><span className="field-access-icon measurement"><FileText size={23} /></span><div><strong>Minha medição</strong><small>Acompanhe serviços e valores</small></div><ChevronRight size={17} /></button>
-          </div></section>
-          <section className="field-section field-notice"><span><Bell size={19} /></span><div><small>AVISO DA OBRA</small><strong>Reunião de segurança às 13h30</strong><p>Ponto de encontro: entrada do almoxarifado.</p></div></section>
-          <div className="sync-status"><CheckCircle2 size={17} /><span><strong>Tudo sincronizado</strong><small>Última sincronização agora</small></span></div>
-        </>}
-
-        {view === 'messages' && <section className="field-screen">
-          <div className="field-screen-title"><div><span>COMUNICAÇÃO</span><h1>Mensagens</h1><p>Converse com o engenheiro ou com a equipe da sua obra.</p></div></div>
-          <div className="chat-selector"><button className={chatRoom === 'engineer' ? 'active' : ''} onClick={() => setChatRoom('engineer')}><span className="avatar">{managerInitials}</span><div><strong>Engenheiro</strong><small>{project.manager}</small></div></button><button className={chatRoom === 'site' ? 'active' : ''} onClick={() => setChatRoom('site')}><span className="group-avatar"><Users size={18} /></span><div><strong>Chat da obra</strong><small>12 participantes</small></div></button></div>
-          <div className="chat-panel"><div className="chat-panel-header"><span className={chatRoom === 'engineer' ? 'avatar' : 'group-avatar'}>{chatRoom === 'engineer' ? managerInitials : <Users size={18} />}</span><div><strong>{chatRoom === 'engineer' ? project.manager : project.name}</strong><small>{chatRoom === 'engineer' ? 'Engenheiro responsável · online' : 'Grupo geral da obra · 12 participantes'}</small></div></div><div className="chat-messages"><span className="chat-date">HOJE</span>{messages[chatRoom].map(item => <div key={item.id} className={`chat-message ${item.mine ? 'mine' : ''}`}>{chatRoom === 'site' && !item.mine && <strong>{item.author}</strong>}<p>{item.text}</p><small>{item.time}</small></div>)}</div><form className="chat-compose" onSubmit={sendMessage}><button type="button" aria-label="Adicionar"><Plus size={19} /></button><input value={message} onChange={event => setMessage(event.target.value)} placeholder="Digite uma mensagem" /><button type="submit" className="send-message" aria-label="Enviar"><ChevronRight size={19} /></button></form></div>
+    <div className="field-app field-mobile">
+      <header className="fm-header"><button className="fm-project" onClick={() => { stopRecording(false); setSelectedProjectId(null) }}><span className="fm-project-icon"><Building2 size={21} /></span><span><strong>{project.name}</strong><small>Toque para trocar de obra</small></span><ChevronDown size={20} /></button></header>
+      <main className="fm-main">
+        {view === 'messages' && <section className="fm-chat">
+          <div className="fm-rooms">
+            <button className={chatRoom === 'engineer' ? 'active' : ''} onClick={() => selectRoom('engineer')}><span className="fm-room-avatar">{managerInitials}</span><div><strong>Engenheiro</strong><small>{project.manager}</small></div></button>
+            <button className={chatRoom === 'site' ? 'active' : ''} onClick={() => selectRoom('site')}><span className="fm-room-avatar group"><Users size={19} /></span><div><strong>Grupo da obra</strong><small>12 pessoas</small></div>{unreadSite > 0 && <em className="fm-unread">{unreadSite}</em>}</button>
+          </div>
+          <div className="fm-messages" ref={messagesRef}><span className="fm-day">HOJE</span>{messages[chatRoom].map(item => <div key={item.id} className={`fm-bubble ${item.mine ? 'mine' : ''}`}>{chatRoom === 'site' && !item.mine && <strong>{item.author}</strong>}{item.audio ? <AudioMessage seconds={item.audio.seconds} url={item.audio.url} /> : <p>{item.text}</p>}<small>{item.time}</small></div>)}</div>
+          {recording ? <div className="fm-compose">
+            <button type="button" className="fm-round danger" onClick={() => stopRecording(false)} aria-label="Apagar áudio"><Trash2 size={24} /></button>
+            <div className="fm-recording" role="status"><i /><strong>{formatSeconds(recordSeconds)}</strong><span>Gravando áudio</span></div>
+            <button type="button" className="fm-round primary" onClick={() => stopRecording(true)} aria-label="Enviar áudio"><Send size={24} /></button>
+          </div> : <form className="fm-compose" onSubmit={sendMessage}>
+            <button type="button" className="fm-round" aria-label="Adicionar"><Plus size={24} /></button>
+            <input value={message} onChange={event => setMessage(event.target.value)} placeholder="Mensagem" />
+            {message.trim() ? <button type="submit" className="fm-round primary" aria-label="Enviar mensagem"><Send size={24} /></button> : <button type="button" className="fm-round primary" onClick={startRecording} aria-label="Gravar áudio"><Mic size={24} /></button>}
+          </form>}
         </section>}
+
+        {view !== 'messages' && <div className="fm-scroll">
 
         {view === 'materials' && <section className="field-screen">
           <div className="field-screen-title"><div><span>MATERIAIS</span><h1>Solicitar material</h1><p>Envie o pedido diretamente para o responsável pela obra.</p></div></div>
@@ -497,8 +602,9 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
         </section>}
 
         {view === 'profile' && <section className="field-screen"><div className="field-profile-card"><div className="avatar profile-avatar">JM</div><h1>João Martins</h1><p>Prestador de serviço</p><div><span><small>Função</small><strong>Pedreiro</strong></span><span><small>Tipo de acesso</small><strong>Prestador de serviço</strong></span><span><small>Obras disponíveis</small><strong>{assignedProjects.length} obras</strong></span></div><button onClick={onLogout}><LogOut size={18} />Sair da Vértia</button></div></section>}
+        </div>}
       </main>
-      <nav className="field-bottom-nav"><button className={view === 'home' ? 'active' : ''} onClick={() => setView('home')}><Home size={19} /><span>Início</span></button><button className={view === 'messages' ? 'active' : ''} onClick={() => setView('messages')}><MessageCircle size={19} /><span>Chats</span></button><button className={view === 'materials' ? 'active' : ''} onClick={() => setView('materials')}><ClipboardCheck size={19} /><span>Materiais</span></button><button className={view === 'measurement' ? 'active' : ''} onClick={() => setView('measurement')}><FileText size={19} /><span>Medição</span></button><button className={view === 'profile' ? 'active' : ''} onClick={() => setView('profile')}><UserRound size={19} /><span>Perfil</span></button></nav>
+      <nav className="fm-nav"><button className={view === 'messages' ? 'active' : ''} onClick={() => goTo('messages')}><MessageCircle size={26} /><span>Conversa</span></button><button className={view === 'materials' ? 'active' : ''} onClick={() => goTo('materials')}><ClipboardCheck size={26} /><span>Material</span></button><button className={view === 'measurement' ? 'active' : ''} onClick={() => goTo('measurement')}><FileText size={26} /><span>Medição</span></button><button className={view === 'profile' ? 'active' : ''} onClick={() => goTo('profile')}><UserRound size={26} /><span>Perfil</span></button></nav>
     </div>
   )
 }
