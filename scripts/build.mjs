@@ -9,7 +9,6 @@ const result = spawnSync('./node_modules/.bin/esbuild', [
   'src/main.tsx',
   '--bundle',
   '--minify',
-  '--sourcemap',
   '--outfile=dist/assets/index.js',
 ], { stdio: 'inherit' })
 
