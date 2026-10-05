@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type Dispatch, type FormEvent, type SetStateAction } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type Dispatch, type FormEvent, type SetStateAction } from 'react'
 import {
   ArrowLeftRight, Bell, Building2, Camera, CalendarDays, Check, CheckCircle2, ChevronDown,
   ChevronLeft, ChevronRight, ClipboardCheck, Clock3, FileText, Filter, FolderOpen,
@@ -391,7 +391,7 @@ function LoginScreen({ onLogin }: { onLogin: (role: Role) => void }) {
   )
 }
 
-type ChatMessage = { id: number; author: string; time: string; mine: boolean; text?: string; audio?: { seconds: number; url?: string } }
+type ChatMessage = { id: number; author: string; time: string; mine: boolean; text?: string; audio?: { seconds: number; url?: string }; photo?: string }
 
 const audioBars = [35, 60, 45, 80, 55, 30, 70, 95, 50, 40, 75, 60, 35, 85, 65, 45, 30, 55, 90, 70, 40, 60, 50, 35, 75, 45, 30, 55]
 const formatSeconds = (value: number) => `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, '0')}`
@@ -451,6 +451,7 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
   const startingRef = useRef(false)
   const aliveRef = useRef(true)
   const messagesRef = useRef<HTMLDivElement | null>(null)
+  const photoInputRef = useRef<HTMLInputElement | null>(null)
   const [messages, setMessages] = useState<Record<ChatRoom, ChatMessage[]>>({
     engineer: [
       { id: 1, author: 'Rafael Costa', text: 'Bom dia, João. Consegue conferir a chegada dos blocos?', time: '08:12', mine: false },
@@ -465,8 +466,9 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
     ],
   })
   const [requests, setRequests] = useState([
-    { id: 1, item: 'Argamassa AC-II', quantity: '12 sacos', status: 'Em análise', date: 'Hoje, 09:10' },
-    { id: 2, item: 'Disco de corte 110 mm', quantity: '3 unidades', status: 'Aprovado', date: 'Ontem, 15:42' },
+    { id: 1, item: 'Argamassa AC-II', quantity: '12 sacos', status: 'A caminho', date: 'Hoje, 09:10' },
+    { id: 2, item: 'Disco de corte 110 mm', quantity: '3 unidades', status: 'Comprado', date: 'Ontem, 15:42' },
+    { id: 3, item: 'Cimento CP-II', quantity: '20 sacos', status: 'Em cotação', date: 'Ontem, 11:03' },
   ])
   const project = assignedProjects.find(item => item.id === selectedProjectId) ?? assignedProjects[0]
   const managerInitials = project.manager.split(' ').slice(0, 2).map(name => name[0]).join('')
@@ -549,6 +551,27 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
     }, ...current])
     setMaterial(''); setQuantity(''); setDetails(''); setUrgent(false); setRequestSent(true)
   }
+  const sendPhoto = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setMessages(current => ({
+      ...current,
+      [chatRoom]: [...current[chatRoom], { id: Date.now(), author: 'Você', time: 'Agora', mine: true, photo: url }],
+    }))
+    event.target.value = ''
+  }
+  const confirmReceipt = (id: number) => setRequests(current => current.map(request => request.id === id ? { ...request, status: 'Recebido' } : request))
+  const repeatRequest = (request: { item: string; quantity: string }) => {
+    const units = ['unidades', 'sacos', 'metros', 'caixas', 'litros', 'kg']
+    const [qty, ...rest] = request.quantity.split(' ')
+    setMaterial(request.item)
+    setQuantity(qty)
+    if (rest.length && units.includes(rest.join(' '))) setUnit(rest.join(' '))
+    setRequestSent(false)
+    const scroll = document.querySelector('.fm-scroll')
+    if (scroll) scroll.scrollTop = 0
+  }
 
   const chooseProject = (projectId: number) => {
     setSelectedProjectId(projectId)
@@ -578,13 +601,14 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
             <button className={chatRoom === 'engineer' ? 'active' : ''} onClick={() => selectRoom('engineer')}><span className="fm-room-avatar">{managerInitials}</span><div><strong>Engenheiro</strong><small>{project.manager}</small></div></button>
             <button className={chatRoom === 'site' ? 'active' : ''} onClick={() => selectRoom('site')}><span className="fm-room-avatar group"><Users size={19} /></span><div><strong>Grupo da obra</strong><small>12 pessoas</small></div>{unreadSite > 0 && <em className="fm-unread">{unreadSite}</em>}</button>
           </div>
-          <div className="fm-messages" ref={messagesRef}><span className="fm-day">HOJE</span>{messages[chatRoom].map(item => <div key={item.id} className={`fm-bubble ${item.mine ? 'mine' : ''}`}>{chatRoom === 'site' && !item.mine && <strong>{item.author}</strong>}{item.audio ? <AudioMessage seconds={item.audio.seconds} url={item.audio.url} /> : <p>{item.text}</p>}<small>{item.time}</small></div>)}</div>
+          <div className="fm-messages" ref={messagesRef}><span className="fm-day">HOJE</span>{messages[chatRoom].map(item => <div key={item.id} className={`fm-bubble ${item.mine ? 'mine' : ''}`}>{chatRoom === 'site' && !item.mine && <strong>{item.author}</strong>}{item.audio ? <AudioMessage seconds={item.audio.seconds} url={item.audio.url} /> : item.photo ? <img className="fm-photo" src={item.photo} alt="Foto enviada" /> : <p>{item.text}</p>}<small>{item.time}</small></div>)}</div>
           {recording ? <div className="fm-compose">
             <button type="button" className="fm-round danger" onClick={() => stopRecording(false)} aria-label="Apagar áudio"><Trash2 size={24} /></button>
             <div className="fm-recording" role="status"><i /><strong>{formatSeconds(recordSeconds)}</strong><span>Gravando áudio</span></div>
             <button type="button" className="fm-round primary" onClick={() => stopRecording(true)} aria-label="Enviar áudio"><Send size={24} /></button>
           </div> : <form className="fm-compose" onSubmit={sendMessage}>
-            <button type="button" className="fm-round" aria-label="Adicionar"><Plus size={24} /></button>
+            <button type="button" className="fm-round" onClick={() => photoInputRef.current?.click()} aria-label="Enviar foto"><Camera size={24} /></button>
+            <input ref={photoInputRef} type="file" accept="image/*" capture="environment" hidden onChange={sendPhoto} />
             <input value={message} onChange={event => setMessage(event.target.value)} placeholder="Mensagem" />
             {message.trim() ? <button type="submit" className="fm-round primary" aria-label="Enviar mensagem"><Send size={24} /></button> : <button type="button" className="fm-round primary" onClick={startRecording} aria-label="Gravar áudio"><Mic size={24} /></button>}
           </form>}
@@ -595,7 +619,7 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
         {view === 'materials' && <section className="field-screen">
           <div className="field-screen-title"><div><span>MATERIAIS</span><h1>Solicitar material</h1><p>Envie o pedido diretamente para o responsável pela obra.</p></div></div>
           <form className="material-form" onSubmit={requestMaterial}><label>Material ou equipamento<input value={material} onChange={event => { setMaterial(event.target.value); setRequestSent(false) }} placeholder="Ex.: Argamassa AC-II" required /></label><div className="material-form-row"><label>Quantidade<input value={quantity} onChange={event => setQuantity(event.target.value)} placeholder="Ex.: 10" required /></label><label>Unidade<select value={unit} onChange={event => setUnit(event.target.value)}><option>unidades</option><option>sacos</option><option>metros</option><option>caixas</option><option>litros</option><option>kg</option></select></label></div><label>Observação<textarea value={details} onChange={event => setDetails(event.target.value)} placeholder="Informe marca, medida ou onde será utilizado." /></label><label className="urgent-check"><input type="checkbox" checked={urgent} onChange={event => setUrgent(event.target.checked)} /><span><strong>Pedido urgente</strong><small>Marque somente se o trabalho estiver impedido.</small></span></label>{requestSent && <div className="request-success"><CheckCircle2 size={18} />Solicitação enviada para o responsável da obra.</div>}<button className="primary-button material-submit" type="submit">Enviar solicitação <ChevronRight size={17} /></button></form>
-          <div className="field-section-heading material-heading"><h2>Meus pedidos</h2><span>{requests.length} solicitações</span></div><div className="material-requests">{requests.map(request => <div key={request.id}><span className="request-icon"><ClipboardCheck size={19} /></span><div><strong>{request.item}</strong><small>{request.quantity} · {request.date}</small></div><span className={`request-status ${request.status.toLowerCase().replace(' ', '-')}`}>{request.status}</span></div>)}</div>
+          <div className="field-section-heading material-heading"><h2>Meus pedidos</h2><span>{requests.length} solicitações</span></div><div className="material-requests">{requests.map(request => <div key={request.id}><span className="request-icon"><ClipboardCheck size={19} /></span><div><strong>{request.item}</strong><small>{request.quantity} · {request.date}</small></div><span className={`request-status ${request.status.toLowerCase().replace(' ', '-')}`}>{request.status}</span><div className="request-actions">{(request.status === 'A caminho' || request.status === 'Entregue') && <button type="button" className="request-confirm" onClick={() => confirmReceipt(request.id)}><Check size={13} />Confirmar recebimento</button>}{request.status === 'Recebido' && <span className="request-received"><CheckCircle2 size={13} />Recebido</span>}<button type="button" className="request-repeat" onClick={() => repeatRequest(request)}><ArrowLeftRight size={13} />Repetir</button></div></div>)}</div>
         </section>}
 
         {view === 'measurement' && <section className="field-screen">
@@ -616,7 +640,7 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
         {view === 'profile' && <section className="field-screen"><div className="field-profile-card"><div className="avatar profile-avatar">JM</div><h1>João Martins</h1><p>Prestador de serviço</p><div><span><small>Função</small><strong>Pedreiro</strong></span><span><small>Tipo de acesso</small><strong>Prestador de serviço</strong></span><span><small>Obras disponíveis</small><strong>{assignedProjects.length} obras</strong></span></div><button onClick={onLogout}><LogOut size={18} />Sair da Vértia</button></div></section>}
         </div>}
       </main>
-      <nav className="fm-nav"><button className={view === 'messages' ? 'active' : ''} onClick={() => goTo('messages')}><MessageCircle size={26} /><span>Conversa</span></button><button className={view === 'materials' ? 'active' : ''} onClick={() => goTo('materials')}><ClipboardCheck size={26} /><span>Material</span></button><button className={view === 'measurement' ? 'active' : ''} onClick={() => goTo('measurement')}><FileText size={26} /><span>Medição</span></button><button className={view === 'profile' ? 'active' : ''} onClick={() => goTo('profile')}><UserRound size={26} /><span>Perfil</span></button></nav>
+      <nav className="fm-nav"><button className={view === 'messages' ? 'active' : ''} onClick={() => goTo('messages')}><MessageCircle size={21} /><span>Conversa</span></button><button className={view === 'materials' ? 'active' : ''} onClick={() => goTo('materials')}><ClipboardCheck size={21} /><span>Material</span></button><button className={view === 'measurement' ? 'active' : ''} onClick={() => goTo('measurement')}><FileText size={21} /><span>Medição</span></button><button className={view === 'profile' ? 'active' : ''} onClick={() => goTo('profile')}><UserRound size={21} /><span>Perfil</span></button></nav>
     </div>
   )
 }
