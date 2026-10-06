@@ -776,3 +776,15 @@ h1, h2, h3, p { margin-top: 0; }
   .orcamentos-table .admin-table-head, .orcamentos-table article { min-width: 680px; }
   .budget-head, .budget-row, .budget-stage-head { min-width: 620px; }
 }
+
+/* Espaçamento padrão — 16px entre blocos (admin e engenheiro), igual ao portal do cliente */
+.content { display: flex; flex-direction: column; gap: 16px; }
+.engineer-main { display: flex; flex-direction: column; gap: 16px; }
+.engineer-section-page { display: flex; flex-direction: column; gap: 16px; }
+.section-block, .dashboard-lower, .admin-dashboard-shortcuts, .admin-two-columns,
+.admin-table-panel, .viz-section-heading, .supervisao-panel, .admin-settings-grid,
+.settings-panel-wide, .engineer-performance-grid, .engineer-metrics,
+.engineer-dashboard-grid, .material-control-heading { margin-top: 0; }
+.page-actions, .crm-summary, .engineer-financial-summary, .engineer-page-heading { margin-bottom: 0; }
+.inventory-toolbar, .engineer-documents-toolbar { margin: 0; }
+.engineer-section-page > .engineer-section-heading { margin-bottom: 0; }
