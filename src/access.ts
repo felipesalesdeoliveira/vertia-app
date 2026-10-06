@@ -58,3 +58,8 @@ export const resolveAccess = (profile: string, overrides: Record<string, boolean
     return acc
   }, {})
 }
+
+/** Exceções já configuradas pelo Master. Chave = id da pessoa. */
+export const INITIAL_USER_ACCESS: UserAccess = {
+  3: { finance: false }, // Suéllen atua no comercial; não precisa do financeiro
+}

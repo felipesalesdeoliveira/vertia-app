@@ -21,7 +21,7 @@ const PROFILE_DETAILS: Record<Profile, string> = {
 const initialPeople: Person[] = [
   { id: 1, name: 'Guilherme Cybulski', email: 'guilherme@cymaco.com.br', profile: 'Master', scope: 'Todas as obras', status: 'Ativo' },
   { id: 2, name: 'Taine Garcia', email: 'taine@cymaco.com.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
-  { id: 3, name: 'Suéllen Weber', email: 'suellen@cymaco.com.br', profile: 'Financeiro', scope: 'Todas as obras', status: 'Ativo' },
+  { id: 3, name: 'Suéllen Weber', email: 'suellen@cymaco.com.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
   { id: 4, name: 'Leonardo Alves', email: 'leonardo@cymaco.com.br', profile: 'Engenheiro', scope: '3 obras', status: 'Ativo' },
   { id: 5, name: 'Felipe Sales', email: 'felipe@cymaco.com.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
   { id: 6, name: 'Carlos Mendes', email: 'carlos.mendes@email.com', profile: 'Equipe de campo', scope: 'Ed. El Greco', status: 'Ativo' },
