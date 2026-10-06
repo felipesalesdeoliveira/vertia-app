@@ -709,3 +709,20 @@ h1, h2, h3, p { margin-top: 0; }
   .fornecedores-table { overflow-x: auto; }
   .fornecedores-table .admin-table-head, .fornecedores-table article { min-width: 680px; }
 }
+
+/* Cliente — menu lateral fixo no desktop, gaveta no mobile (<=900px) */
+.client-app:not(.client-project-picker-app) { padding-left: 252px; }
+.client-app .sidebar { transition: transform .22s ease; box-shadow: 0 24px 60px rgba(4,10,28,.28); }
+.client-menu-button { display: none; flex: 0 0 auto; color: var(--navy); }
+.client-sidebar-close { display: none; color: #aeb8d1; }
+.client-sidebar-project { width: auto; cursor: pointer; text-align: left; }
+.client-sidebar-project small { color: #9ca9c9; }
+.client-sidebar-project strong { color: white; }
+.client-overlay { position: fixed; inset: 0; z-index: 25; border: 0; background: rgba(4,10,28,.48); }
+@media (max-width: 900px) {
+  .client-app:not(.client-project-picker-app) { padding-left: 0; }
+  .client-app .sidebar { transform: translateX(-100%); }
+  .client-app .sidebar.sidebar-open { transform: translateX(0); }
+  .client-menu-button { display: inline-grid; }
+  .client-sidebar-close { display: inline-grid; }
+}
