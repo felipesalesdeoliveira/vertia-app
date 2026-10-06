@@ -2,7 +2,7 @@ import { useState, type Dispatch, type FormEvent, type SetStateAction } from 're
 import { Check, Plus, Search, ShieldCheck } from './icons'
 import { initialsOf } from './format'
 import { projects } from './data'
-import { COMPANY_MODULES, type UserAccess } from './access'
+import { COMPANY_MODULES, resolveAccess, type UserAccess } from './access'
 
 const PROFILES = ['Master', 'Administrador', 'Financeiro', 'Engenheiro', 'Equipe de campo', 'Cliente'] as const
 type Profile = typeof PROFILES[number]
@@ -105,7 +105,7 @@ export function ProfilesPage({ isMaster, userAccess, setUserAccess }: { isMaster
       </section>
 
       <section className="admin-table-panel profile-panel">
-        <div className="admin-panel-heading"><div><h2>Acesso por pessoa</h2><p>{isMaster ? 'Desmarque o que a pessoa não deve ver. Vale sobre o perfil dela.' : 'Somente o perfil Master altera o acesso individual.'}</p></div>{!isMaster && <em className="access-locked"><ShieldCheck size={14} />Somente leitura</em>}</div>
+        <div className="admin-panel-heading"><div><h2>Acesso por pessoa</h2><p>{isMaster ? 'Começa pelo padrão do perfil. Ajuste só as exceções.' : 'Somente o perfil Master altera o acesso individual.'}</p></div>{!isMaster && <em className="access-locked"><ShieldCheck size={14} />Somente leitura</em>}</div>
         <div className="profile-scroll">
           <table className="permission-table access-table">
             <thead><tr><th scope="col">Pessoa</th>{COMPANY_MODULES.map(item => <th scope="col" key={item.key}>{item.label}</th>)}</tr></thead>
@@ -113,7 +113,7 @@ export function ProfilesPage({ isMaster, userAccess, setUserAccess }: { isMaster
               <th scope="row"><span><strong>{person.name}</strong><small>{person.profile}</small></span></th>
               {COMPANY_MODULES.map(item => {
                 const master = person.profile === 'Master'
-                const allowed = master || userAccess[person.id]?.[item.key] !== false
+                const allowed = master || resolveAccess(person.profile, userAccess[person.id])[item.key]
                 return <td key={item.key}><button className={allowed ? 'allowed' : ''} disabled={!isMaster || master} aria-pressed={allowed} aria-label={`${person.name}: ${item.label}`} onClick={() => setUserAccess(current => ({ ...current, [person.id]: { ...current[person.id], [item.key]: !allowed } }))}>{allowed && <Check size={14} strokeWidth={3} />}</button></td>
               })}
             </tr>)}</tbody>

@@ -7,7 +7,7 @@ import {
   ShieldCheck, Smartphone, Sparkles, Sun, Cloud, CloudRain, Trash2, TrendingUp, Upload, UserRound, Users, X,
 } from './icons'
 import { formatMoney, formatNumber } from './format'
-import { COMPANY_MODULES, isPageEnabled, isPageVisibleTo, type Modules, type UserAccess } from './access'
+import { COMPANY_MODULES, isPageEnabled, isPageVisibleTo, resolveAccess, type Modules, type UserAccess } from './access'
 import { initialUpdates, projects, type Project, type Update } from './data'
 import { CrmBoard, initialLeads, isOpenLead, type Lead } from './crm'
 import { CashFlow, FinanceOverview } from './finance'
@@ -1372,7 +1372,7 @@ export default function App() {
   const logout = () => { setRole(null); setView('company'); setPage('dashboard'); setSelectedProject(null); setModal(false) }
 
   const currentUserId = role === 'master' ? 1 : 5
-  const currentAccess = role === 'master' ? undefined : userAccess[currentUserId]
+  const currentAccess = role === 'master' ? undefined : resolveAccess('Administrador', userAccess[currentUserId])
 
   if (!role) return <LoginScreen onLogin={(nextRole) => { setRole(nextRole); setView(nextRole === 'client' ? 'client' : 'company') }} />
   if (role === 'field') return <FieldPortal assignedProjects={projects.slice(0, 3)} onLogout={logout} />

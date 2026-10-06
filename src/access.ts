@@ -39,3 +39,22 @@ export const isPageVisibleTo = (page: string, access: Record<string, boolean> | 
   const key = moduleOf(page)
   return !key || access[key] !== false
 }
+
+/** O que cada perfil enxerga por padrão. O Master ajusta exceções por pessoa. */
+export const PROFILE_MODULE_DEFAULTS: Record<string, string[]> = {
+  Master: COMPANY_MODULES.map(item => item.key),
+  Administrador: COMPANY_MODULES.map(item => item.key),
+  Financeiro: ['orcamentos', 'finance', 'inventory', 'fornecedores', 'relatorios', 'documents', 'updates'],
+  Engenheiro: ['orcamentos', 'inventory', 'documents', 'approvals', 'updates'],
+  'Equipe de campo': [],
+  Cliente: [],
+}
+
+/** Resolve o acesso efetivo: padrão do perfil, com as exceções do Master por cima. */
+export const resolveAccess = (profile: string, overrides: Record<string, boolean> | undefined) => {
+  const defaults = PROFILE_MODULE_DEFAULTS[profile] ?? []
+  return COMPANY_MODULES.reduce<Record<string, boolean>>((acc, item) => {
+    acc[item.key] = overrides?.[item.key] ?? defaults.includes(item.key)
+    return acc
+  }, {})
+}
