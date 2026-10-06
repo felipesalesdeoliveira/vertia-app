@@ -813,3 +813,12 @@ h1, h2, h3, p { margin-top: 0; }
   .gantt-head, .gantt-row { min-width: 640px; grid-template-columns: 170px 1fr; }
   .gantt.week .gantt-head, .gantt.week .gantt-row { min-width: 1030px; }
 }
+
+/* Cliente — resumo do cronograma */
+.client-schedule-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.client-schedule-summary > div { padding: 14px; border: 1px solid var(--line); border-radius: 13px; background: white; }
+.client-schedule-summary small { display: block; color: #8f98aa; font-size: 8px; letter-spacing: .06em; }
+.client-schedule-summary strong { display: block; color: var(--navy); font-size: 15px; margin-top: 5px; }
+.client-schedule-summary strong.ok { color: #147a59; }
+.client-schedule-summary strong.late { color: #c0392b; }
+@media (max-width: 640px) { .client-schedule-summary { grid-template-columns: 1fr; } }
