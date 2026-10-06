@@ -623,3 +623,67 @@ h1, h2, h3, p { margin-top: 0; }
   .engineer-sidebar-close { display: inline-grid; }
   .engineer-app:not(.engineer-picker-app) .engineer-header .logo.compact { display: block; }
 }
+
+/* Admin — Supervisão, Aprovações, Documentos, Configurações */
+.supervisao-panel { margin-top: 18px; }
+.supervisao-table .admin-table-head, .supervisao-table article { display: grid; grid-template-columns: 1.5fr .7fr .9fr .9fr .7fr .9fr; gap: 12px; align-items: center; }
+.supervisao-table .admin-table-head { padding: 9px 16px; }
+.supervisao-table article { min-height: 56px; padding: 10px 16px; border-top: 1px solid #edf0f5; }
+.supervisao-table article > div strong { color: var(--navy); font-size: 9px; }
+.supervisao-table article > span { color: #667188; font-size: 8.5px; }
+.supervisao-table article > span.bad { color: #c0392b; font-weight: 750; }
+.supervisao-table article > strong { color: #187658; font-size: 8.5px; }
+.supervisao-table article.risk { background: #fff8f7; box-shadow: inset 3px 0 0 #e0564a; }
+.approvals-table .admin-table-head, .approvals-table article { display: grid; grid-template-columns: 1.8fr 1fr 1fr .6fr .7fr; gap: 12px; align-items: center; }
+.approvals-table .admin-table-head { padding: 9px 16px; }
+.approvals-table article { min-height: 56px; padding: 10px 16px; border-top: 1px solid #edf0f5; }
+.approvals-table article > div strong { color: var(--navy); font-size: 9px; }
+.approvals-table article > span { color: #667188; font-size: 8.5px; }
+.documents-table .admin-table-head, .documents-table article { display: grid; grid-template-columns: 2fr 1fr .8fr .8fr .8fr; gap: 12px; align-items: center; }
+.documents-table .admin-table-head { padding: 9px 16px; }
+.documents-table article { min-height: 56px; padding: 10px 16px; border-top: 1px solid #edf0f5; }
+.documents-table article > div { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.documents-table .document-file-icon { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: var(--blue); background: #eef3ff; flex: 0 0 30px; }
+.documents-table article > div strong { color: var(--navy); font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.documents-table article > span { color: #667188; font-size: 8.5px; }
+.approvals-table article > em, .documents-table article > em { justify-self: start; padding: 5px 7px; border-radius: 8px; font-size: 7px; font-style: normal; font-weight: 700; }
+.approvals-table article > em.ok, .documents-table article > em.ok { color: #167354; background: #e7f8f1; }
+.approvals-table article > em.warn { color: #a66a1c; background: #fff2de; }
+.approvals-table article > em.wait, .documents-table article > em.wait { color: #5c6680; background: #eef1f6; }
+.documents-table article > em.doc-cat { color: #4a5570; background: #eef1f6; }
+.admin-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 16px; }
+.settings-panel-wide { margin-top: 13px; }
+.settings-fields { display: grid; gap: 12px; margin-top: 4px; }
+.settings-fields > label { display: block; color: var(--navy); font-size: 9px; font-weight: 700; }
+.settings-fields input { width: 100%; height: 38px; margin-top: 6px; padding: 0 10px; border: 1px solid #dfe4ed; border-radius: 9px; background: #fbfcfe; color: var(--navy); font-size: 10px; outline: 0; }
+.settings-subdomain { display: flex; align-items: center; margin-top: 6px; }
+.settings-subdomain input { border-radius: 9px 0 0 9px; }
+.settings-subdomain span { height: 38px; display: flex; align-items: center; padding: 0 10px; border: 1px solid #dfe4ed; border-left: 0; border-radius: 0 9px 9px 0; background: #f0f3f8; color: #697187; font-size: 9px; }
+.settings-color { display: flex; align-items: center; gap: 9px; margin-top: 6px; }
+.settings-color input { width: 44px; height: 34px; padding: 0; border: 1px solid #dfe4ed; border-radius: 8px; background: none; }
+.settings-color span { color: #697187; font-size: 10px; font-weight: 650; }
+.settings-switch { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.settings-switch strong { display: block; color: var(--navy); font-size: 10px; }
+.settings-switch small { display: block; color: #8d95a7; font-size: 8px; margin-top: 3px; }
+.settings-save { margin-top: 14px; }
+.settings-notif > div { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid #edf0f5; }
+.settings-notif > div:last-child { border-bottom: 0; }
+.settings-notif strong { flex: 1; color: var(--navy); font-size: 10px; }
+.settings-switch-inline { display: inline-flex; align-items: center; gap: 6px; color: #697187; font-size: 9px; }
+.settings-integrations { display: grid; gap: 10px; margin-top: 4px; }
+.settings-integrations article { display: grid; grid-template-columns: 40px 1fr auto; gap: 11px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; }
+.settings-int-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--blue); background: #eef3ff; }
+.settings-integrations strong { display: block; color: var(--navy); font-size: 11px; }
+.settings-integrations small { display: block; color: #8d95a7; font-size: 9px; margin-top: 2px; }
+.settings-integrations .secondary-button { font-size: 9px; min-height: 32px; padding: 0 12px; }
+.switch { display: inline-block; position: relative; width: 32px; height: 18px; border-radius: 10px; background: #cfd6e2; flex: 0 0 32px; }
+.switch.on { background: var(--blue); }
+.switch::after { content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%; background: white; top: 2px; left: 2px; transition: left .18s; }
+.switch.on::after { left: 16px; }
+@media (max-width: 900px) {
+  .admin-settings-grid { grid-template-columns: 1fr; }
+  .supervisao-table, .approvals-table, .documents-table { overflow-x: auto; }
+  .supervisao-table .admin-table-head, .supervisao-table article { min-width: 640px; }
+  .approvals-table .admin-table-head, .approvals-table article { min-width: 680px; }
+  .documents-table .admin-table-head, .documents-table article { min-width: 680px; }
+}
