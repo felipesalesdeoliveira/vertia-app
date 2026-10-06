@@ -788,3 +788,24 @@ h1, h2, h3, p { margin-top: 0; }
 .page-actions, .crm-summary, .engineer-financial-summary, .engineer-page-heading { margin-bottom: 0; }
 .inventory-toolbar, .engineer-documents-toolbar { margin: 0; }
 .engineer-section-page > .engineer-section-heading { margin-bottom: 0; }
+
+/* Orçamento — Gantt (hierarquia etapa > serviço e prazos) */
+.budget-view-toggle button { padding: 7px 11px; font-size: 9px; }
+.gantt-head { display: grid; grid-template-columns: 230px 1fr; gap: 14px; align-items: center; padding: 9px 16px; background: #f8f9fc; color: #929aac; font-size: 7px; letter-spacing: .07em; }
+.gantt-months { display: grid; }
+.gantt-months span { text-align: center; }
+.gantt-row { display: grid; grid-template-columns: 230px 1fr; gap: 14px; align-items: center; padding: 7px 16px; border-top: 1px solid #edf0f5; }
+.gantt-row-stage { background: #f2f5fb; }
+.gantt-label { color: var(--navy); font-size: 8.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gantt-row-stage .gantt-label { font-weight: 700; }
+.gantt-label.child { padding-left: 14px; color: #667188; }
+.gantt-track { display: grid; align-items: center; min-height: 20px; }
+.gantt-cell { height: 20px; border-right: 1px dashed #e8ecf3; }
+.gantt-cell:last-of-type { border-right: 0; }
+.gantt-bar { height: 13px; border-radius: 5px; background: linear-gradient(90deg, #4e8bff, #164cff); box-shadow: 0 2px 6px rgba(22,76,255,.22); }
+.gantt-bar.stage { height: 9px; border-radius: 4px; background: linear-gradient(90deg, #8a63ff, #4e45ee); box-shadow: none; }
+@media (max-width: 900px) {
+  .gantt { overflow-x: auto; }
+  .gantt-head, .gantt-row { min-width: 640px; }
+  .gantt-head, .gantt-row { grid-template-columns: 170px 1fr; }
+}

@@ -263,27 +263,51 @@ function ProjectsPage({ onOpenProject, onMenu }: { onOpenProject: (project: Proj
 
 const budgetSheet = [
   { stage: 'Serviços preliminares', items: [
-    { name: 'Instalação do canteiro de obras', unit: 'vb', qty: 1, price: 8500 },
-    { name: 'Limpeza e demolições', unit: 'm²', qty: 120, price: 42 },
+    { name: 'Instalação do canteiro de obras', unit: 'vb', qty: 1, price: 8500, start: 0, span: 1 },
+    { name: 'Limpeza e demolições', unit: 'm²', qty: 120, price: 42, start: 0, span: 1 },
   ] },
   { stage: 'Estrutura e fundação', items: [
-    { name: 'Concreto usinado FCK 25', unit: 'm³', qty: 48, price: 520 },
-    { name: 'Armação de aço CA-50', unit: 'kg', qty: 2400, price: 12.8 },
-    { name: 'Fôrma de madeira para estrutura', unit: 'm²', qty: 310, price: 68 },
+    { name: 'Concreto usinado FCK 25', unit: 'm³', qty: 48, price: 520, start: 1, span: 2 },
+    { name: 'Armação de aço CA-50', unit: 'kg', qty: 2400, price: 12.8, start: 1, span: 2 },
+    { name: 'Fôrma de madeira para estrutura', unit: 'm²', qty: 310, price: 68, start: 1, span: 1 },
   ] },
   { stage: 'Alvenaria e vedação', items: [
-    { name: 'Alvenaria de bloco cerâmico 14 cm', unit: 'm²', qty: 420, price: 94 },
-    { name: 'Reboco interno', unit: 'm²', qty: 680, price: 38 },
+    { name: 'Alvenaria de bloco cerâmico 14 cm', unit: 'm²', qty: 420, price: 94, start: 3, span: 2 },
+    { name: 'Reboco interno', unit: 'm²', qty: 680, price: 38, start: 4, span: 2 },
   ] },
   { stage: 'Instalações', items: [
-    { name: 'Instalação elétrica completa', unit: 'pto', qty: 86, price: 180 },
-    { name: 'Instalação hidráulica', unit: 'pto', qty: 42, price: 240 },
+    { name: 'Instalação elétrica completa', unit: 'pto', qty: 86, price: 180, start: 4, span: 2 },
+    { name: 'Instalação hidráulica', unit: 'pto', qty: 42, price: 240, start: 4, span: 2 },
   ] },
   { stage: 'Acabamentos', items: [
-    { name: 'Revestimento cerâmico', unit: 'm²', qty: 290, price: 118 },
-    { name: 'Pintura látex — 2 demãos', unit: 'm²', qty: 680, price: 32 },
+    { name: 'Revestimento cerâmico', unit: 'm²', qty: 290, price: 118, start: 6, span: 2 },
+    { name: 'Pintura látex — 2 demãos', unit: 'm²', qty: 680, price: 32, start: 7, span: 1 },
   ] },
 ]
+const budgetMonths = ['Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+const ganttRows = budgetSheet.flatMap(stage => {
+  const start = Math.min(...stage.items.map(item => item.start))
+  const end = Math.max(...stage.items.map(item => item.start + item.span))
+  return [
+    { label: stage.stage, start, span: end - start, level: 0 },
+    ...stage.items.map(item => ({ label: item.name, start: item.start, span: item.span, level: 1 })),
+  ]
+})
+
+function BudgetGantt() {
+  return (
+    <div className="gantt">
+      <div className="gantt-head"><span>ETAPA / SERVIÇO</span><div className="gantt-months" style={{ gridTemplateColumns: `repeat(${budgetMonths.length}, 1fr)` }}>{budgetMonths.map(month => <span key={month}>{month}</span>)}</div></div>
+      {ganttRows.map(row => <div key={`${row.level}-${row.label}`} className={`gantt-row ${row.level === 0 ? 'gantt-row-stage' : ''}`}>
+        <span className={`gantt-label ${row.level ? 'child' : ''}`} title={row.label}>{row.label}</span>
+        <div className="gantt-track" style={{ gridTemplateColumns: `repeat(${budgetMonths.length}, 1fr)` }}>
+          {budgetMonths.map((month, index) => <i key={month} className="gantt-cell" style={{ gridColumn: index + 1, gridRow: 1 }} />)}
+          <span className={`gantt-bar ${row.level === 0 ? 'stage' : ''}`} style={{ gridColumn: `${row.start + 1} / span ${row.span}`, gridRow: 1 }} title={`${budgetMonths[row.start]} — ${budgetMonths[row.start + row.span - 1]}`} />
+        </div>
+      </div>)}
+    </div>
+  )
+}
 const stageTotal = (stage: { items: { qty: number; price: number }[] }) => stage.items.reduce((sum, item) => sum + item.qty * item.price, 0)
 const budgetDirectCost = budgetSheet.reduce((sum, stage) => sum + stageTotal(stage), 0)
 const money2 = (value: number) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -311,6 +335,7 @@ function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, m
   const [invoiceForm, setInvoiceForm] = useState({ number: '', supplier: '', project: projects[0].name, value: '' })
   const [selectedBudget, setSelectedBudget] = useState(budgetList[0].id)
   const [bdi, setBdi] = useState(22)
+  const [budgetView, setBudgetView] = useState<'sheet' | 'gantt'>('sheet')
   const titles: Partial<Record<Page, { title: string; subtitle: string }>> = {
     finance: { title: 'Painel financeiro', subtitle: 'Receitas, despesas e resultado da empresa, com comparativo entre anos.' },
     cashflow: { title: 'Fluxo de caixa', subtitle: 'Entradas, saídas e saldo de caixa mês a mês.' },
@@ -365,7 +390,7 @@ function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, m
           <section className="admin-summary-grid"><article><span className="admin-summary-icon result"><ClipboardCheck size={20} /></span><div><small>ORÇAMENTOS</small><strong>{budgetList.length}</strong><p>No período</p></div></article><article><span className="admin-summary-icon revenue"><TrendingUp size={20} /></span><div><small>VALOR TOTAL</small><strong>{formatMoney(budgetList.reduce((sum, item) => sum + item.value, 0))}</strong><p>Somando todos</p></div></article><article><span className="admin-summary-icon receive"><CheckCircle2 size={20} /></span><div><small>TAXA DE APROVAÇÃO</small><strong>60%</strong><p>3 de 5 decididos</p></div></article><article><span className="admin-summary-icon expense"><Clock3 size={20} /></span><div><small>AGUARDANDO CLIENTE</small><strong>1</strong><p>{formatMoney(140000)} em jogo</p></div></article></section>
           <div className="page-actions"><div className="segmented"><button className="active">Todos</button><button>Rascunho</button><button>Enviado</button><button>Aprovado</button></div><button className="primary-button"><Plus size={17} />Novo orçamento</button></div>
           <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Orçamentos</h2><p>Clique em um orçamento para ver a composição.</p></div></div><div className="orcamentos-table"><div className="admin-table-head"><span>ORÇAMENTO</span><span>CLIENTE</span><span>VALOR</span><span>DATA</span><span>STATUS</span></div>{budgetList.map(row => <article key={row.id} className={selectedBudget === row.id ? 'selected' : ''} onClick={() => setSelectedBudget(row.id)}><div><strong>{row.name}</strong><small>{row.id}</small></div><span>{row.client}</span><strong>{formatMoney(row.value)}</strong><span>{row.date}</span><em className={row.status === 'Aprovado' ? 'ok' : row.status === 'Enviado' ? 'wait' : row.status === 'Reprovado' ? 'bad' : 'draft'}>{row.status}</em></article>)}</div></section>
-          <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Composição — {budgetList.find(item => item.id === selectedBudget)?.name}</h2><p>Serviços, quantidades e preços unitários.</p></div><div className="budget-actions"><label className="budget-bdi-field">BDI<input type="number" min="0" max="80" value={bdi} onChange={event => setBdi(Number(event.target.value) || 0)} /><em>%</em></label><button>Exportar PDF</button></div></div><BudgetSheet bdi={bdi} /></section>
+          <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Composição — {budgetList.find(item => item.id === selectedBudget)?.name}</h2><p>Serviços, quantidades e preços unitários.</p></div><div className="budget-actions"><div className="segmented budget-view-toggle"><button className={budgetView === 'sheet' ? 'active' : ''} onClick={() => setBudgetView('sheet')}>Planilha</button><button className={budgetView === 'gantt' ? 'active' : ''} onClick={() => setBudgetView('gantt')}>Cronograma</button></div>{budgetView === 'sheet' && <label className="budget-bdi-field">BDI<input type="number" min="0" max="80" value={bdi} onChange={event => setBdi(Number(event.target.value) || 0)} /><em>%</em></label>}<button>Exportar PDF</button></div></div>{budgetView === 'sheet' ? <BudgetSheet bdi={bdi} /> : <BudgetGantt />}</section>
         </>}
 
         {page === 'fornecedores' && <>
@@ -793,6 +818,7 @@ function EngineerPortal({ assignedProjects, onLogout }: { assignedProjects: Proj
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
   const [section, setSection] = useState<EngineerSection>('dashboard')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [budgetView, setBudgetView] = useState<'sheet' | 'gantt'>('sheet')
   const [message, setMessage] = useState('')
   const [chatMessages, setChatMessages] = useState<{ id: number; author: string; text?: string; photo?: string; time: string; mine: boolean }[]>([
     { id: 1, author: 'Carlos · Mestre de obras', text: 'A equipe de alvenaria iniciou o setor A.', time: '07:18', mine: false },
@@ -939,7 +965,7 @@ function EngineerPortal({ assignedProjects, onLogout }: { assignedProjects: Proj
         {section === 'documents' && <section className="engineer-section-page engineer-wide-page"><div className="engineer-page-heading"><div><span>ARQUIVOS DA OBRA</span><h1>Documentos</h1><p>Centralize projetos, contratos, relatórios e documentos técnicos.</p></div><button className="primary-button"><Upload size={17} />Enviar arquivo</button></div><div className="engineer-document-categories"><button><span className="document-category-icon projects"><FolderOpen size={21} /></span><div><strong>Projetos</strong><small>12 arquivos</small></div><ChevronRight size={17} /></button><button><span className="document-category-icon contracts"><FileText size={21} /></span><div><strong>Contratos</strong><small>5 arquivos</small></div><ChevronRight size={17} /></button><button><span className="document-category-icon reports"><ClipboardCheck size={21} /></span><div><strong>Relatórios</strong><small>8 arquivos</small></div><ChevronRight size={17} /></button><button><span className="document-category-icon technical"><HardHat size={21} /></span><div><strong>Documentos técnicos</strong><small>7 arquivos</small></div><ChevronRight size={17} /></button></div><div className="engineer-documents-toolbar"><div><h2>Arquivos recentes</h2><p>Últimos documentos adicionados ou atualizados.</p></div><label><Search size={16} /><input placeholder="Buscar documento" /></label></div><div className="engineer-document-table"><div className="engineer-document-head"><span>DOCUMENTO</span><span>CATEGORIA</span><span>ATUALIZAÇÃO</span><span>RESPONSÁVEL</span><span /></div>{[{ name: 'Projeto arquitetônico executivo — V05', type: 'PDF · 8,4 MB', category: 'Projetos', update: 'Hoje, 09:42', owner: 'Rafael Costa' }, { name: 'Contrato de execução da obra', type: 'PDF · 2,1 MB', category: 'Contratos', update: '28 set, 16:10', owner: 'Ana Prado' }, { name: 'Projeto estrutural — fundações', type: 'DWG · 12,7 MB', category: 'Projetos', update: '27 set, 11:25', owner: 'Camila Nunes' }, { name: 'Relatório fotográfico — setembro', type: 'PDF · 18,3 MB', category: 'Relatórios', update: '26 set, 18:02', owner: 'Rafael Costa' }, { name: 'ART de execução', type: 'PDF · 950 KB', category: 'Documentos técnicos', update: '22 set, 10:30', owner: 'Rafael Costa' }].map(document => <article key={document.name}><div><span className="document-file-icon"><FileText size={19} /></span><span><strong>{document.name}</strong><small>{document.type}</small></span></div><em>{document.category}</em><p>{document.update}</p><p>{document.owner}</p><button className="icon-button"><MoreHorizontal size={18} /></button></article>)}</div></section>}
 
         {section === 'diary' && <section className="engineer-section-page"><div className="engineer-page-heading"><div><span>REGISTRO TÉCNICO</span><h1>Diário de obra</h1><p>Registre equipe, clima, serviços executados e ocorrências do dia.</p></div></div><div className="engineer-diary-grid"><form className="diary-form" onSubmit={saveDiary}><div className="diary-form-heading"><span><FileText size={20} /></span><div><strong>Novo registro</strong><small>29 de setembro de 2026</small></div></div><div className="diary-form-row"><label>Condição do tempo<select value={diaryForm.weather} onChange={event => setDiaryForm(current => ({ ...current, weather: event.target.value }))}><option>Ensolarado</option><option>Parcialmente nublado</option><option>Chuvoso</option></select></label><label>Profissionais em campo<input type="number" min="0" value={diaryForm.workers} onChange={event => setDiaryForm(current => ({ ...current, workers: event.target.value }))} /></label></div><label>Serviços executados<textarea required value={diaryForm.activities} onChange={event => { setDiaryForm(current => ({ ...current, activities: event.target.value })); setDiarySaved(false) }} placeholder="Descreva as atividades realizadas, locais e avanço do dia." /></label><label>Ocorrências e observações<textarea value={diaryForm.occurrences} onChange={event => setDiaryForm(current => ({ ...current, occurrences: event.target.value }))} placeholder="Registre impedimentos, visitas, acidentes ou decisões." /></label><button type="button" className="diary-upload" onClick={() => diaryPhotoRef.current?.click()}><Camera size={19} /><span><strong>Adicionar fotos</strong><small>{diaryPhotos.length ? `${diaryPhotos.length} foto(s) anexada(s)` : 'Registre o avanço visual da obra'}</small></span></button><input ref={diaryPhotoRef} type="file" accept="image/*" multiple capture="environment" hidden onChange={addDiaryPhotos} />{diaryPhotos.length > 0 && <div className="diary-photo-strip">{diaryPhotos.map((src, index) => <img key={index} src={src} alt="" />)}</div>}<div className="diary-voice">{recording ? <><button type="button" className="diary-voice-stop" onClick={() => stopRecording(true)}><Check size={16} />Parar ({formatSeconds(recordSeconds)})</button><button type="button" className="diary-voice-cancel" onClick={() => stopRecording(false)} aria-label="Cancelar"><X size={16} /></button></> : diaryAudio ? <div className="diary-voice-done"><AudioMessage seconds={diaryAudio} /><button type="button" onClick={() => setDiaryAudio(null)} aria-label="Remover áudio"><X size={14} /></button></div> : <button type="button" className="diary-voice-start" onClick={startRecording}><Mic size={16} />Gravar nota de voz</button>}</div><div className="visibility-choice"><div><strong>Visibilidade</strong><p>Defina se o cliente poderá ver este registro.</p></div><div className="choice-buttons"><button type="button" className={!diaryVisible ? 'active' : ''} onClick={() => setDiaryVisible(false)}><ShieldCheck size={16} />Somente equipe</button><button type="button" className={diaryVisible ? 'active' : ''} onClick={() => setDiaryVisible(true)}><UserRound size={16} />Visível ao cliente</button></div></div>{diarySaved && <div className="request-success"><CheckCircle2 size={18} />Diário salvo e publicado no histórico.</div>}<button className="primary-button diary-submit" type="submit"><Check size={17} />Salvar diário de obra</button></form><aside className="diary-history"><div className="engineer-section-heading"><div><h2>Registros recentes</h2><p>Histórico da obra selecionada.</p></div></div>{diaryEntries.map(entry => <article key={entry.id}><div className="diary-entry-date"><CalendarDays size={17} /><span><strong>{entry.date}</strong><small>Por {entry.author}</small></span></div><p>{entry.summary}</p>{entry.photos && entry.photos.length > 0 && <div className="diary-entry-photos">{entry.photos.map((src, index) => <img key={index} src={src} alt="" />)}</div>}{entry.audio ? <AudioMessage seconds={entry.audio} /> : null}<div className="diary-entry-meta"><span>{entry.weather}</span><span>{entry.workers} profissionais</span><em className={entry.visible ? 'visible' : 'internal'}>{entry.visible ? 'Visível ao cliente' : 'Somente equipe'}</em></div></article>)}</aside></div></section>}
-        {section === 'budget' && <section className="engineer-section-page engineer-wide-page"><div className="engineer-page-heading"><div><span>PLANEJAMENTO</span><h1>Orçamento da obra</h1><p>Planilha de serviços, quantidades e preços aprovada para {project.name}.</p></div><button className="primary-button"><Plus size={17} />Novo item</button></div><div className="engineer-financial-summary"><div><small>CUSTO DIRETO</small><strong>{formatMoney(budgetDirectCost)}</strong><p>{budgetSheet.length} etapas orçadas</p></div><div><small>BDI (22%)</small><strong>{formatMoney(budgetDirectCost * 0.22)}</strong><p>Indiretos e lucro</p></div><div><small>TOTAL APROVADO</small><strong>{formatMoney(budgetDirectCost * 1.22)}</strong><p>Assinado pelo cliente</p></div></div><section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Composição do orçamento</h2><p>Itens agrupados por etapa da obra.</p></div><button>Exportar</button></div><BudgetSheet bdi={22} /></section></section>}
+        {section === 'budget' && <section className="engineer-section-page engineer-wide-page"><div className="engineer-page-heading"><div><span>PLANEJAMENTO</span><h1>Orçamento da obra</h1><p>Planilha de serviços, quantidades e preços aprovada para {project.name}.</p></div><button className="primary-button"><Plus size={17} />Novo item</button></div><div className="engineer-financial-summary"><div><small>CUSTO DIRETO</small><strong>{formatMoney(budgetDirectCost)}</strong><p>{budgetSheet.length} etapas orçadas</p></div><div><small>BDI (22%)</small><strong>{formatMoney(budgetDirectCost * 0.22)}</strong><p>Indiretos e lucro</p></div><div><small>TOTAL APROVADO</small><strong>{formatMoney(budgetDirectCost * 1.22)}</strong><p>Assinado pelo cliente</p></div></div><section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Composição do orçamento</h2><p>Itens e prazos agrupados por etapa da obra.</p></div><div className="budget-actions"><div className="segmented budget-view-toggle"><button className={budgetView === 'sheet' ? 'active' : ''} onClick={() => setBudgetView('sheet')}>Planilha</button><button className={budgetView === 'gantt' ? 'active' : ''} onClick={() => setBudgetView('gantt')}>Cronograma</button></div><button>Exportar</button></div></div>{budgetView === 'sheet' ? <BudgetSheet bdi={22} /> : <BudgetGantt />}</section></section>}
 
         {section === 'review' && <section className="engineer-section-page"><div className="engineer-page-heading"><div><span>PUBLICAÇÃO</span><h1>Revisar e publicar</h1><p>Itens prontos para compartilhar com o cliente. Nada vai ao portal sem a sua liberação.</p></div></div><div className="engineer-review-list">{reviewItems.map(item => <article key={item.id} className={item.status === 'published' ? 'published' : ''}><span className="review-type">{item.type}</span><div><strong>{item.title}</strong><small>{item.status === 'published' ? 'Publicado para o cliente' : 'Aguardando a sua liberação'}</small></div>{item.status === 'pending' ? <button className="primary-button" onClick={() => publishReview(item.id)}><UserRound size={16} />Publicar ao cliente</button> : <span className="review-done"><CheckCircle2 size={18} />Publicado</span>}</article>)}</div></section>}
 
