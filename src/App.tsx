@@ -117,18 +117,18 @@ const dashboardMonths = ['Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 const activeWorksByMonth = [2, 2, 3, 3, 4, 4, 4, 3]
 const revenueByMonth = [62, 71, 86, 94, 108, 121, 115, 98]
 const costByMonth = [48, 55, 63, 70, 77, 84, 80, 69]
+const contractsByMonth = [1, 0, 2, 1, 2, 3, 1, 2]
 
-function WorksChart() {
-  const max = Math.max(...activeWorksByMonth)
-  const isPeak = (value: number) => value === max
+function CountChart({ values, aria, suffix }: { values: number[]; aria: string; suffix: string }) {
+  const max = Math.max(...values)
   return (
     <div className="viz">
-      <div className="viz-plot" role="img" aria-label={`Obras ativas por mês de ${dashboardMonths[0]} a ${dashboardMonths[dashboardMonths.length - 1]}, variando de ${Math.min(...activeWorksByMonth)} a ${max} obras`}>
-        {activeWorksByMonth.map((value, index) => <div className="viz-group" key={dashboardMonths[index]}>
+      <div className="viz-plot" role="img" aria-label={aria}>
+        {values.map((value, index) => <div className="viz-group" key={dashboardMonths[index]}>
           <span className="viz-mark">
-            {isPeak(value) && <b className="viz-peak">{value}</b>}
-            <i className="viz-bar works" style={{ height: `${(value / max) * 100}%` }} />
-            <em className="viz-tip">{dashboardMonths[index]} · {value} obras</em>
+            {value === max && <b className="viz-peak">{value}</b>}
+            <i className={`viz-bar works ${value === 0 ? 'zero' : ''}`} style={{ height: `${max ? (value / max) * 100 : 0}%` }} />
+            <em className="viz-tip">{dashboardMonths[index]} · {value} {suffix}</em>
           </span>
         </div>)}
       </div>
@@ -142,17 +142,17 @@ function RevenueCostChart() {
   const peak = revenueByMonth.indexOf(Math.max(...revenueByMonth))
   return (
     <div className="viz">
-      <div className="viz-legend"><span><i className="revenue" />Faturamento</span><span><i className="cost" />Gasto</span></div>
-      <div className="viz-plot" role="img" aria-label="Faturamento e gasto por mês, em milhares de reais">
+      <div className="viz-legend"><span><i className="revenue" />Receita</span><span><i className="cost" />Despesa</span></div>
+      <div className="viz-plot" role="img" aria-label="Receita e despesa por mês, em milhares de reais">
         {dashboardMonths.map((month, index) => <div className="viz-group" key={month}>
           <span className="viz-mark">
             {index === peak && <b className="viz-peak">R$ {revenueByMonth[index]} mil</b>}
             <i className="viz-bar revenue" style={{ height: `${(revenueByMonth[index] / max) * 100}%` }} />
-            <em className="viz-tip">{month} · Faturamento R$ {revenueByMonth[index]} mil</em>
+            <em className="viz-tip">{month} · Receita R$ {revenueByMonth[index]} mil</em>
           </span>
           <span className="viz-mark">
             <i className="viz-bar cost" style={{ height: `${(costByMonth[index] / max) * 100}%` }} />
-            <em className="viz-tip">{month} · Gasto R$ {costByMonth[index]} mil</em>
+            <em className="viz-tip">{month} · Despesa R$ {costByMonth[index]} mil</em>
           </span>
         </div>)}
       </div>
@@ -297,8 +297,9 @@ function Dashboard({ updates, onOpenProject, onNewUpdate, onMenu, onNavigate }: 
         <section className="admin-dashboard-shortcuts"><button onClick={() => onNavigate('finance')}><span className="admin-shortcut-icon finance"><ClipboardCheck size={20} /></span><div><strong>Financeiro</strong><small>R$ 184 mil a receber</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('crm')}><span className="admin-shortcut-icon crm"><Users size={20} /></span><div><strong>CRM</strong><small>9 leads ativos no funil</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('inventory')}><span className="admin-shortcut-icon stock"><FolderOpen size={20} /></span><div><strong>Estoque</strong><small>7 itens com saldo baixo</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('invoices')}><span className="admin-shortcut-icon invoice"><FileText size={20} /></span><div><strong>Notas fiscais</strong><small>3 aguardando vínculo</small></div><ChevronRight size={17} /></button></section>
 
         <section className="dashboard-charts">
-          <div className="admin-panel"><div className="admin-panel-heading"><div><h2>Faturamento e gasto por mês</h2><p>Últimos 8 meses, em milhares de reais.</p></div><button onClick={() => onNavigate('finance')}>Ver financeiro</button></div><RevenueCostChart /></div>
-          <div className="admin-panel"><div className="admin-panel-heading"><div><h2>Obras ativas por mês</h2><p>Quantas obras correram em paralelo.</p></div></div><WorksChart /></div>
+          <div className="admin-panel chart-wide"><div className="admin-panel-heading"><div><h2>Receita e despesa por mês</h2><p>Últimos 8 meses, em milhares de reais.</p></div><button onClick={() => onNavigate('finance')}>Ver financeiro</button></div><RevenueCostChart /></div>
+          <div className="admin-panel"><div className="admin-panel-heading"><div><h2>Contratos fechados por mês</h2><p>Propostas que viraram obra.</p></div><button onClick={() => onNavigate('orcamentos')}>Ver orçamentos</button></div><CountChart values={contractsByMonth} aria="Contratos fechados por mês" suffix="contratos" /></div>
+          <div className="admin-panel"><div className="admin-panel-heading"><div><h2>Obras ativas no mês</h2><p>Quantas obras correram em paralelo.</p></div></div><CountChart values={activeWorksByMonth} aria="Obras ativas por mês" suffix="obras" /></div>
         </section>
 
         <section className="admin-table-panel supervisao-panel"><div className="admin-panel-heading"><div><h2>Supervisão das obras</h2><p>Visão por exceção: o que precisa de atenção em cada obra.</p></div><button onClick={() => onNavigate('projects')}>Ver obras</button></div><div className="supervisao-table"><div className="admin-table-head"><span>OBRA</span><span>ATRASO</span><span>PENDÊNCIAS</span><span>COMPRAS VENC.</span><span>MARGEM</span><span>STATUS</span></div>{([{ name: 'Ed. El Greco', delay: '0 d', pend: 2, buy: 1, margin: '35,8%', status: 'Em andamento', risk: false }, { name: 'Ed. Allure', delay: '4 d', pend: 5, buy: 3, margin: '29,6%', status: 'Atenção', risk: true }, { name: 'Ed. Monte Castelo', delay: '0 d', pend: 1, buy: 0, margin: '35,8%', status: 'Em andamento', risk: false }, { name: 'Sede administrativa', delay: '0 d', pend: 0, buy: 0, margin: '34,0%', status: 'Planejada', risk: false }] as const).map(row => <article key={row.name} className={row.risk ? 'risk' : ''}><div><strong>{row.name}</strong></div><span className={row.delay !== '0 d' ? 'bad' : ''}>{row.delay}</span><span className={row.pend > 3 ? 'bad' : ''}>{row.pend} pend.</span><span className={row.buy > 0 ? 'bad' : ''}>{row.buy}</span><strong>{row.margin}</strong><StatusBadge status={row.status} /></article>)}</div></section>

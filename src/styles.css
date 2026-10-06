@@ -976,7 +976,8 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 /* Dashboard — gráficos (paleta validada: azul #164cff x laranja #e07b39) */
-.dashboard-charts { display: grid; grid-template-columns: 1.5fr .8fr; gap: 16px; }
+.dashboard-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.dashboard-charts .chart-wide { grid-column: 1 / -1; }
 .viz-legend { display: flex; gap: 16px; margin-bottom: 12px; }
 .viz-legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; font-weight: 650; }
 .viz-legend i { width: 9px; height: 9px; border-radius: 3px; }
@@ -993,5 +994,7 @@ h1, h2, h3, p { margin-top: 0; }
 .viz-mark:hover .viz-tip { opacity: 1; }
 .viz-axis { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; margin-top: 8px; }
 .viz-axis small { text-align: center; color: #8d95a7; font-size: 8px; }
-@media (max-width: 900px) { .dashboard-charts { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .dashboard-charts { grid-template-columns: 1fr; } .dashboard-charts .chart-wide { grid-column: auto; } }
 @media (max-width: 640px) { .viz-bar { width: 10px; } .viz-plot { height: 150px; } }
+/* Mês sem ocorrência não desenha barra — a lasquinha do min-height leria como "pouco" */
+.viz-bar.zero { min-height: 0; }
