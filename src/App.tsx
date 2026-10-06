@@ -328,6 +328,7 @@ function BudgetGantt() {
 }
 const stageTotal = (stage: { items: { qty: number; price: number }[] }) => stage.items.reduce((sum, item) => sum + item.qty * item.price, 0)
 const budgetDirectCost = budgetSheet.reduce((sum, stage) => sum + stageTotal(stage), 0)
+const budgetArea = 2400
 const money2 = (value: number) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const budgetList = [
   { id: 'ORC-0128', name: 'Ed. El Greco — Recuperação de fachada', client: 'Cond. Ed. El Greco', value: 393700, date: '12/05/2026', status: 'Aprovado' },
@@ -339,11 +340,28 @@ const budgetList = [
 ]
 
 function BudgetSheet({ bdi }: { bdi: number }) {
+  const [hidden, setHidden] = useState<Record<string, boolean>>({ 'Instalação do canteiro e isolamento da área': true, 'Montagem de balancins e linha de vida': true })
+  const isVisible = (name: string) => !hidden[name]
+  const toggle = (name: string) => setHidden(current => ({ ...current, [name]: !current[name] }))
+  const allItems = budgetSheet.flatMap(stage => stage.items)
+  const visibleCount = allItems.filter(item => isVisible(item.name)).length
   return (
     <div className="budget-sheet">
-      <div className="budget-head"><span>ITEM</span><span>UN</span><span>QTD</span><span>V. UNITÁRIO</span><span>TOTAL</span></div>
-      {budgetSheet.map(stage => <div key={stage.stage} className="budget-stage"><div className="budget-stage-head"><strong>{stage.stage}</strong><b>{formatMoney(stageTotal(stage))}</b></div>{stage.items.map(item => <div key={item.name} className="budget-row"><span>{item.name}</span><span>{item.unit}</span><span>{formatNumber(item.qty)}</span><span>{money2(item.price)}</span><strong>{formatMoney(item.qty * item.price)}</strong></div>)}</div>)}
+      <div className="budget-head"><span>Nº</span><span>DESCRIÇÃO</span><span>UN</span><span>QTD</span><span>V. UNITÁRIO</span><span>TOTAL</span><span>CLIENTE</span></div>
+      {budgetSheet.map((stage, stageIndex) => <div key={stage.stage} className="budget-stage">
+        <div className="budget-stage-head"><span className="budget-no">{stageIndex + 1}</span><strong>{stage.stage}</strong><b>{formatMoney(stageTotal(stage))}</b></div>
+        {stage.items.map((item, itemIndex) => <div key={item.name} className="budget-row">
+          <span className="budget-no">{stageIndex + 1}.{itemIndex + 1}</span>
+          <span>{item.name}</span>
+          <span>{item.unit}</span>
+          <span>{formatNumber(item.qty)}</span>
+          <span>{money2(item.price)}</span>
+          <strong>{formatMoney(item.qty * item.price)}</strong>
+          <button type="button" className={`budget-client ${isVisible(item.name) ? 'on' : ''}`} onClick={() => toggle(item.name)} aria-label={`${isVisible(item.name) ? 'Ocultar do' : 'Mostrar ao'} cliente: ${item.name}`}>{isVisible(item.name) ? <Check size={12} /> : null}</button>
+        </div>)}
+      </div>)}
       <div className="budget-totals"><div><span>Custo direto</span><strong>{formatMoney(budgetDirectCost)}</strong></div><div><span>BDI ({bdi}%)</span><strong>{formatMoney(budgetDirectCost * bdi / 100)}</strong></div><div className="budget-grand"><span>Total do orçamento</span><strong>{formatMoney(budgetDirectCost * (1 + bdi / 100))}</strong></div></div>
+      <div className="budget-client-note"><UserRound size={16} /><span><strong>{visibleCount} de {allItems.length} itens visíveis ao cliente</strong><small>Marque na coluna Cliente o que aparece na proposta e no portal. O que ficar desmarcado é só interno.</small></span></div>
     </div>
   )
 }
@@ -408,7 +426,7 @@ function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, m
           <section className="admin-summary-grid"><article><span className="admin-summary-icon result"><ClipboardCheck size={20} /></span><div><small>ORÇAMENTOS</small><strong>{budgetList.length}</strong><p>No período</p></div></article><article><span className="admin-summary-icon revenue"><TrendingUp size={20} /></span><div><small>VALOR TOTAL</small><strong>{formatMoney(budgetList.reduce((sum, item) => sum + item.value, 0))}</strong><p>Somando todos</p></div></article><article><span className="admin-summary-icon receive"><CheckCircle2 size={20} /></span><div><small>TAXA DE APROVAÇÃO</small><strong>60%</strong><p>3 de 5 decididos</p></div></article><article><span className="admin-summary-icon expense"><Clock3 size={20} /></span><div><small>AGUARDANDO CLIENTE</small><strong>1</strong><p>{formatMoney(140000)} em jogo</p></div></article></section>
           <div className="page-actions"><div className="segmented"><button className="active">Todos</button><button>Rascunho</button><button>Enviado</button><button>Aprovado</button></div><button className="primary-button"><Plus size={17} />Novo orçamento</button></div>
           <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Orçamentos</h2><p>Clique em um orçamento para ver a composição.</p></div></div><div className="orcamentos-table"><div className="admin-table-head"><span>ORÇAMENTO</span><span>CLIENTE</span><span>VALOR</span><span>DATA</span><span>STATUS</span></div>{budgetList.map(row => <article key={row.id} className={selectedBudget === row.id ? 'selected' : ''} onClick={() => setSelectedBudget(row.id)}><div><strong>{row.name}</strong><small>{row.id}</small></div><span>{row.client}</span><strong>{formatMoney(row.value)}</strong><span>{row.date}</span><em className={row.status === 'Aprovado' ? 'ok' : row.status === 'Enviado' ? 'wait' : row.status === 'Reprovado' ? 'bad' : 'draft'}>{row.status}</em></article>)}</div></section>
-          <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Composição — {budgetList.find(item => item.id === selectedBudget)?.name}</h2><p>Serviços, quantidades e preços unitários.</p></div><div className="budget-actions"><div className="segmented budget-view-toggle"><button className={budgetView === 'sheet' ? 'active' : ''} onClick={() => setBudgetView('sheet')}>Planilha</button><button className={budgetView === 'gantt' ? 'active' : ''} onClick={() => setBudgetView('gantt')}>Cronograma</button></div>{budgetView === 'sheet' && <label className="budget-bdi-field">BDI<input type="number" min="0" max="80" value={bdi} onChange={event => setBdi(Number(event.target.value) || 0)} /><em>%</em></label>}<button>Exportar PDF</button></div></div>{budgetView === 'sheet' ? <BudgetSheet bdi={bdi} /> : <BudgetGantt />}</section>
+          <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Composição — {budgetList.find(item => item.id === selectedBudget)?.name}</h2><p>Serviços, quantidades e preços unitários.</p></div><div className="budget-actions"><div className="segmented budget-view-toggle"><button className={budgetView === 'sheet' ? 'active' : ''} onClick={() => setBudgetView('sheet')}>Planilha</button><button className={budgetView === 'gantt' ? 'active' : ''} onClick={() => setBudgetView('gantt')}>Cronograma</button></div>{budgetView === 'sheet' && <label className="budget-bdi-field">BDI<input type="number" min="0" max="80" value={bdi} onChange={event => setBdi(Number(event.target.value) || 0)} /><em>%</em></label>}<button>Revisões</button><button>Exportar PDF</button></div></div><div className="budget-meta"><div><small>Nº DO ORÇAMENTO</small><strong>ORC-2026-001</strong></div><div><small>SITUAÇÃO</small><strong className="ok">{budgetList.find(item => item.id === selectedBudget)?.status}</strong></div><div><small>ÁREA DE FACHADA</small><strong>{formatNumber(budgetArea)} m²</strong></div><div><small>VALOR / m²</small><strong>{money2(budgetDirectCost * (1 + bdi / 100) / budgetArea)}</strong></div><div><small>TOTAL GERAL</small><strong className="total">{formatMoney(budgetDirectCost * (1 + bdi / 100))}</strong></div></div>{budgetView === 'sheet' ? <BudgetSheet bdi={bdi} /> : <BudgetGantt />}</section>
         </>}
 
         {page === 'fornecedores' && <>
@@ -487,9 +505,10 @@ function ProjectDetail({ project, updates, onBack, onClient, onNewUpdate }: { pr
     <>
       <header className="project-topbar">
         <button className="back-button" onClick={onBack}><ChevronLeft size={18} />Obras</button>
-        <div className="project-top-actions"><button className="secondary-button" onClick={onClient}><UserRound size={17} />Ver como cliente</button><button className="primary-button" onClick={onNewUpdate}><Plus size={18} />Nova atualização</button></div>
+        <div className="project-top-actions"><button className="secondary-button" onClick={onClient}><UserRound size={17} />Ver como cliente</button><button className="secondary-button"><ShieldCheck size={17} />Compartilhar com cliente</button><button className="primary-button" onClick={onNewUpdate}><Plus size={18} />Nova atualização</button></div>
       </header>
       <main className="content project-detail">
+        <section className={`project-detail-cover ${project.tone}`}><div className="building-lines"><span /><span /><span /><span /></div><StatusBadge status={project.status} /></section>
         <section className="project-hero">
           <div className={`project-mark ${project.tone}`}><Building2 size={26} /></div>
           <div className="project-hero-copy"><div><h1>{project.name}</h1><StatusBadge status={project.status} /></div><p>{project.location} · Cliente: {project.client}</p></div>
@@ -500,7 +519,12 @@ function ProjectDetail({ project, updates, onBack, onClient, onNewUpdate }: { pr
           <section className="module-grid">{moduleCards.map(({ label, detail, icon: Icon, color }) => <button className="module-card" key={label}><span className={`module-icon ${color}`}><Icon size={20} /></span><span><strong>{label}</strong><small>{detail}</small></span><ChevronRight size={18} /></button>)}</section>
           <section className="project-columns">
             <div className="panel activity-panel"><div className="panel-heading"><div><h2>Linha do tempo</h2><p>Últimas movimentações da obra</p></div><button className="text-button">Ver tudo</button></div>{updates.slice(0, 3).map(update => <ActivityItem key={update.id} item={update} />)}</div>
-            <div className="panel project-info"><div className="panel-heading"><div><h2>Informações da obra</h2><p>Dados principais</p></div><button className="icon-button subtle"><MoreHorizontal size={18} /></button></div><dl><div><dt>Responsável</dt><dd>{project.manager}</dd></div><div><dt>Cliente</dt><dd>{project.client}</dd></div><div><dt>Início</dt><dd>12 mai 2026</dd></div><div><dt>Previsão</dt><dd>{project.deadline}</dd></div><div><dt>Participantes</dt><dd>9 pessoas</dd></div></dl></div>
+            <div className="panel project-info"><div className="panel-heading"><div><h2>Informações da obra</h2><p>Dados principais</p></div><button className="icon-button subtle"><MoreHorizontal size={18} /></button></div><dl><div><dt>Contratante</dt><dd>{project.client}</dd></div><div><dt>Responsável</dt><dd>{project.manager}</dd></div><div><dt>Endereço</dt><dd>{project.location}</dd></div><div><dt>Contrato</dt><dd>CT-2026-014</dd></div><div><dt>Prazo</dt><dd>140 dias</dd></div><div><dt>Início</dt><dd>03 ago 2026</dd></div><div><dt>Término</dt><dd>{project.deadline}</dd></div></dl></div>
+          </section>
+
+          <section className="project-columns">
+            <div className="panel"><div className="panel-heading"><div><h2>Documentos da obra</h2><p>Contrato, projetos e laudos</p></div><button className="text-button">Adicionar</button></div><div className="obra-docs">{([['Contrato com o cliente', 'R00 · 30/09/2026', 'Cliente'], ['Memorial descritivo', 'R02 · 18/09/2026', 'Cliente'], ['ART de execução', 'R00 · 22/08/2026', 'Interno'], ['Laudo de inspeção de fachada', 'R01 · 05/08/2026', 'Interno']] as [string, string, string][]).map(doc => <div key={doc[0]}><span className="doc-icon"><FileText size={17} /></span><div><strong>{doc[0]}</strong><small>{doc[1]}</small></div><em className={doc[2] === 'Cliente' ? 'ok' : 'wait'}>{doc[2]}</em></div>)}</div></div>
+            <div className="panel"><div className="panel-heading"><div><h2>Equipe da obra</h2><p>Quem tem acesso a esta obra</p></div><button className="text-button">Adicionar</button></div><div className="obra-team">{([['RC', 'Rafael Costa', 'Engenheiro responsável'], ['CM', 'Carlos Mendes', 'Mestre de obras'], ['JM', 'João Martins', 'Pintor predial'], ['MA', 'Mariana Alves', 'Cliente']] as [string, string, string][]).map(person => <div key={person[1]}><span className="avatar">{person[0]}</span><div><strong>{person[1]}</strong><small>{person[2]}</small></div></div>)}</div></div>
           </section>
         </> : <div className="panel tab-content"><div className="empty-icon"><Clock3 size={28} /></div><h2>{tab}</h2><p>A estrutura desta seção será refinada junto com os documentos correspondentes.</p></div>}
       </main>

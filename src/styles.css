@@ -755,7 +755,7 @@ h1, h2, h3, p { margin-top: 0; }
 .budget-bdi-field { display: inline-flex; align-items: center; gap: 6px; color: var(--navy); font-size: 8px; font-weight: 700; }
 .budget-bdi-field input { width: 54px; height: 30px; padding: 0 8px; border: 1px solid #dfe4ed; border-radius: 8px; background: white; color: var(--navy); font-size: 9px; text-align: right; }
 .budget-bdi-field em { font-style: normal; color: #8d95a7; }
-.budget-head, .budget-row { display: grid; grid-template-columns: 2.4fr .5fr .6fr .85fr .9fr; gap: 12px; align-items: center; }
+.budget-head, .budget-row { display: grid; grid-template-columns: 46px 2.2fr .45fr .55fr .8fr .85fr 62px; gap: 12px; align-items: center; }
 .budget-head { padding: 9px 16px; color: #929aac; background: #f8f9fc; font-size: 7px; letter-spacing: .07em; }
 .budget-stage-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: #f2f5fb; border-top: 1px solid #e6eaf2; }
 .budget-stage-head strong { color: var(--navy); font-size: 9.5px; }
@@ -831,3 +831,41 @@ h1, h2, h3, p { margin-top: 0; }
 .settings-company-logo strong { display: block; color: var(--navy); font-size: 10px; }
 .settings-company-logo small { display: block; color: #8d95a7; font-size: 8px; margin-top: 3px; }
 .settings-company-logo .secondary-button { min-height: 32px; padding: 0 12px; font-size: 9px; }
+
+/* Orçamento — numeração, coluna Cliente e faixa de dados */
+.budget-no { color: #9aa4b6; font-size: 8px; font-weight: 700; }
+.budget-stage-head .budget-no { color: var(--navy); }
+.budget-client { width: 20px; height: 20px; border: 1.5px solid #c7cedb; border-radius: 6px; background: white; color: white; display: grid; place-items: center; justify-self: center; padding: 0; }
+.budget-client.on { background: #27ae60; border-color: #27ae60; }
+.budget-client-note { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-top: 1px solid #e6eaf2; background: #f6f8fd; color: var(--blue); }
+.budget-client-note strong { display: block; color: var(--navy); font-size: 9.5px; }
+.budget-client-note small { display: block; color: #7c879b; font-size: 8px; margin-top: 3px; line-height: 1.5; }
+.budget-meta { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 14px 16px; border-top: 1px solid #edf0f5; background: #fbfcfe; }
+.budget-meta small { display: block; color: #8f98aa; font-size: 7px; letter-spacing: .06em; }
+.budget-meta strong { display: block; color: var(--navy); font-size: 12px; margin-top: 4px; }
+.budget-meta strong.ok { color: #167354; }
+.budget-meta strong.total { color: var(--blue); font-size: 14px; }
+
+/* Detalhe da obra — capa, documentos e equipe */
+.project-detail-cover { position: relative; height: 150px; border-radius: 16px; overflow: hidden; display: flex; align-items: flex-end; justify-content: flex-end; padding: 14px; }
+.project-detail-cover.blue { background: linear-gradient(130deg, #0d2a6b, #2e77ff); }
+.project-detail-cover.violet { background: linear-gradient(130deg, #2a1769, #7b50ff); }
+.project-detail-cover.cyan { background: linear-gradient(130deg, #073a4d, #17a2b8); }
+.project-detail-cover.navy { background: linear-gradient(130deg, #061536, #1b3a7a); }
+.project-detail-cover .status { position: relative; z-index: 1; background: rgba(255,255,255,.92); }
+.obra-docs > div { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #edf0f5; }
+.obra-docs > div:last-child { border-bottom: 0; }
+.doc-icon { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; color: var(--blue); background: #eef3ff; }
+.obra-docs strong { display: block; color: var(--navy); font-size: 10px; }
+.obra-docs small { display: block; color: #8d95a7; font-size: 8px; margin-top: 3px; }
+.obra-docs em { font-style: normal; font-size: 7px; font-weight: 750; padding: 4px 7px; border-radius: 7px; }
+.obra-docs em.ok { color: #167354; background: #e7f8f1; }
+.obra-docs em.wait { color: #5c6680; background: #eef1f6; }
+.obra-team > div { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #edf0f5; }
+.obra-team > div:last-child { border-bottom: 0; }
+.obra-team strong { display: block; color: var(--navy); font-size: 10px; }
+.obra-team small { display: block; color: #8d95a7; font-size: 8px; margin-top: 3px; }
+@media (max-width: 900px) {
+  .budget-meta { grid-template-columns: repeat(2, 1fr); }
+  .budget-head, .budget-row { min-width: 760px; }
+}
