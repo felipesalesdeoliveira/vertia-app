@@ -1008,3 +1008,18 @@ h1, h2, h3, p { margin-top: 0; }
 .viz-filter { display: flex; align-items: center; gap: 11px; }
 .viz-filter > span { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
 .viz-filter .segmented button { font-size: 9px; padding: 7px 11px; }
+
+/* Painel financeiro — contas a receber */
+.receivables-summary { grid-template-columns: repeat(3, 1fr); }
+.receivables-table .admin-table-head, .receivables-table article { display: grid; grid-template-columns: 1.3fr 1.1fr .7fr .8fr .8fr .7fr; gap: 12px; align-items: center; }
+.receivables-table .admin-table-head { padding: 9px 16px; }
+.receivables-table article { min-height: 56px; padding: 10px 16px; border-top: 1px solid #edf0f5; }
+.receivables-table article > div strong { color: var(--navy); font-size: 9px; }
+.receivables-table article > span { color: #667188; font-size: 8.5px; }
+.receivables-table article > span.bad { color: #c0392b; font-weight: 750; }
+.receivables-table article > strong { color: var(--navy); font-size: 8.5px; }
+.receivables-table article > em { justify-self: start; padding: 5px 8px; border-radius: 8px; font-size: 7px; font-style: normal; font-weight: 750; }
+.receivables-table article > em.bad { color: #c0392b; background: #ffebe9; }
+.receivables-table article > em.warn { color: #a66a1c; background: #fff2de; }
+.receivables-table article > em.future { color: #5c6680; background: #eef1f6; }
+@media (max-width: 900px) { .receivables-table { overflow-x: auto; } .receivables-table .admin-table-head, .receivables-table article { min-width: 760px; } }
