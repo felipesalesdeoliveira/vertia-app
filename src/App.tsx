@@ -94,6 +94,25 @@ function Logo({ compact = false }: { compact?: boolean }) {
   )
 }
 
+function useCollapsedGroups(storageKey: string) {
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try { const stored = window.localStorage.getItem(storageKey); return stored ? JSON.parse(stored) as Record<string, boolean> : {} } catch { return {} }
+  })
+  useEffect(() => {
+    try { window.localStorage.setItem(storageKey, JSON.stringify(collapsed)) } catch { /* armazenamento indisponível */ }
+  }, [storageKey, collapsed])
+  const toggleGroup = (label: string) => setCollapsed(current => ({ ...current, [label]: !current[label] }))
+  return { collapsed, toggleGroup }
+}
+
+function NavGroupLabel({ label, spaced, collapsed, onToggle }: { label: string; spaced: boolean; collapsed: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" className={`nav-label nav-label-toggle ${spaced ? 'nav-label-spaced' : ''}`} onClick={onToggle} aria-expanded={!collapsed}>
+      {label}<ChevronDown size={13} className={collapsed ? 'rotated' : ''} />
+    </button>
+  )
+}
+
 function StatusBadge({ status }: { status: Project['status'] }) {
   return <span className={`status status-${status.toLowerCase().replace(' ', '-')}`}><span />{status}</span>
 }
@@ -110,6 +129,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
   crmCount: number
   modules: Modules
 }) {
+  const { collapsed, toggleGroup } = useCollapsedGroups('vertia-nav-company')
   const profile = role === 'engineer'
     ? { initials: 'LA', name: 'Leonardo Alves', label: 'Engenheiro' }
     : { initials: 'FS', name: 'Felipe Sales', label: 'Administrador' }
@@ -125,11 +145,22 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
         <ChevronDown size={16} />
       </div>
       <nav className="main-nav">
-        {navGroups.map((group, index) => { const items = group.items.filter(item => isPageEnabled(item.id, modules)); if (!items.length) return null; return <div className="nav-group" key={group.label}><p className={`nav-label ${index ? 'nav-label-spaced' : ''}`}>{group.label}</p>{items.map(({ id, label, icon: Icon, count }) => <button key={id} className={page === id && view === 'company' ? 'active' : ''} onClick={() => { setPage(id); setView('company'); onClose() }}><Icon size={19} /><span>{label}</span>{count && <em>{id === 'crm' ? crmCount : count}</em>}</button>)}</div> })}
-        <p className="nav-label nav-label-spaced">CONTA</p>
-        <button className={page === 'settings' ? 'active' : ''} onClick={() => { setPage('settings'); setView('company'); onClose() }}>
-          <Settings size={19} /><span>Configurações</span>
-        </button>
+        {navGroups.map((group, index) => {
+          const items = group.items.filter(item => isPageEnabled(item.id, modules))
+          if (!items.length) return null
+          const hasActive = items.some(item => item.id === page && view === 'company')
+          const isCollapsed = Boolean(collapsed[group.label]) && !hasActive
+          return <div className="nav-group" key={group.label}>
+            <NavGroupLabel label={group.label} spaced={index > 0} collapsed={isCollapsed} onToggle={() => toggleGroup(group.label)} />
+            {!isCollapsed && items.map(({ id, label, icon: Icon, count }) => <button key={id} className={page === id && view === 'company' ? 'active' : ''} onClick={() => { setPage(id); setView('company'); onClose() }}><Icon size={19} /><span>{label}</span>{count && <em>{id === 'crm' ? crmCount : count}</em>}</button>)}
+          </div>
+        })}
+        <div className="nav-group">
+          <NavGroupLabel label="CONTA" spaced collapsed={Boolean(collapsed.CONTA) && page !== 'settings'} onToggle={() => toggleGroup('CONTA')} />
+          {!(Boolean(collapsed.CONTA) && page !== 'settings') && <button className={page === 'settings' ? 'active' : ''} onClick={() => { setPage('settings'); setView('company'); onClose() }}>
+            <Settings size={19} /><span>Configurações</span>
+          </button>}
+        </div>
       </nav>
       <div className="sidebar-bottom">
         <button className="portal-preview" onClick={() => { setView('client'); onClose() }}>
@@ -917,6 +948,7 @@ function EngineerPortal({ assignedProjects, onLogout }: { assignedProjects: Proj
     { id: 3, type: 'Relatório', title: 'Relatório fotográfico de setembro', status: 'pending' },
   ])
   const project = assignedProjects.find(item => item.id === selectedProjectId) ?? assignedProjects[0]
+  const { collapsed, toggleGroup } = useCollapsedGroups('vertia-nav-engineer')
   const pendingReview = reviewItems.filter(item => item.status === 'pending').length
   const openTasks = tasks.filter(task => task.status !== 'Concluída').length
   const openOccurrences = occurrences.filter(item => item.status !== 'Resolvida').length
@@ -1008,7 +1040,7 @@ function EngineerPortal({ assignedProjects, onLogout }: { assignedProjects: Proj
   return (
     <div className="engineer-app">
       <header className="engineer-header"><button className="engineer-menu-button icon-button" onClick={() => setMenuOpen(true)} aria-label="Abrir menu"><Menu size={22} /></button><Logo compact /><button className="engineer-project-switch" onClick={() => setSelectedProjectId(null)}><Building2 size={18} /><span><small>OBRA ATUAL · TROCAR</small><strong>{project.name}</strong></span><ChevronDown size={15} /></button><div className="engineer-user"><span>LA</span><div><strong>Leonardo Alves</strong><small>Engenheiro</small></div><button className="icon-button" onClick={onLogout}><LogOut size={18} /></button></div></header>
-      <aside className={`sidebar engineer-sidebar ${menuOpen ? 'sidebar-open' : ''}`}><div className="sidebar-top"><Logo /><button className="icon-button engineer-sidebar-close" onClick={() => setMenuOpen(false)} aria-label="Fechar menu"><X size={20} /></button></div><button className="workspace-switch engineer-sidebar-project" onClick={() => { setSelectedProjectId(null); setMenuOpen(false) }}><div className="workspace-avatar"><HardHat size={18} /></div><div><small>Obra atual · trocar</small><strong>{project.name}</strong></div><ChevronDown size={16} /></button><nav className="main-nav">{navGroups.map((group, groupIndex) => <div className="nav-group" key={group.label}><p className={`nav-label ${groupIndex ? 'nav-label-spaced' : ''}`}>{group.label}</p>{group.items.map(item => { const Icon = item.icon; return <button key={item.id} className={section === item.id ? 'active' : ''} onClick={() => { setSection(item.id); setMenuOpen(false) }}><Icon size={19} /><span>{item.label}</span>{item.count ? <em>{item.count}</em> : null}</button> })}</div>)}</nav><div className="sidebar-bottom"><div className="user-block"><div className="avatar">LA</div><div><strong>Leonardo Alves</strong><small>Engenheiro</small></div><button className="logout-button" onClick={onLogout} title="Sair"><LogOut size={17} /></button></div></div></aside>
+      <aside className={`sidebar engineer-sidebar ${menuOpen ? 'sidebar-open' : ''}`}><div className="sidebar-top"><Logo /><button className="icon-button engineer-sidebar-close" onClick={() => setMenuOpen(false)} aria-label="Fechar menu"><X size={20} /></button></div><button className="workspace-switch engineer-sidebar-project" onClick={() => { setSelectedProjectId(null); setMenuOpen(false) }}><div className="workspace-avatar"><HardHat size={18} /></div><div><small>Obra atual · trocar</small><strong>{project.name}</strong></div><ChevronDown size={16} /></button><nav className="main-nav">{navGroups.map((group, groupIndex) => { const hasActive = group.items.some(item => item.id === section); const isCollapsed = Boolean(collapsed[group.label]) && !hasActive; return <div className="nav-group" key={group.label}><NavGroupLabel label={group.label} spaced={groupIndex > 0} collapsed={isCollapsed} onToggle={() => toggleGroup(group.label)} />{!isCollapsed && group.items.map(item => { const Icon = item.icon; return <button key={item.id} className={section === item.id ? 'active' : ''} onClick={() => { setSection(item.id); setMenuOpen(false) }}><Icon size={19} /><span>{item.label}</span>{item.count ? <em>{item.count}</em> : null}</button> })}</div> })}</nav><div className="sidebar-bottom"><div className="user-block"><div className="avatar">LA</div><div><strong>Leonardo Alves</strong><small>Engenheiro</small></div><button className="logout-button" onClick={onLogout} title="Sair"><LogOut size={17} /></button></div></div></aside>
       {menuOpen && <button className="engineer-overlay" onClick={() => setMenuOpen(false)} aria-label="Fechar menu" />}
       <main className="engineer-main">
         {section === 'dashboard' && <>

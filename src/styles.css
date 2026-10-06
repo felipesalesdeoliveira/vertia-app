@@ -927,3 +927,9 @@ h1, h2, h3, p { margin-top: 0; }
 .diary-card-counters em { margin-left: auto; font-style: normal; font-size: 7px; font-weight: 750; padding: 4px 7px; border-radius: 7px; }
 .diary-card-counters em.visible { color: #147a59; background: #e7f8f1; }
 .diary-card-counters em.internal { color: #5c6680; background: #eef1f6; }
+
+/* Menu lateral — grupos recolhíveis */
+.nav-label-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.nav-label-toggle:hover { color: #9fb0d8; }
+.nav-label-toggle svg { flex: 0 0 auto; color: #6d7ca3; transition: transform .18s ease; }
+.nav-label-toggle svg.rotated { transform: rotate(-90deg); }
