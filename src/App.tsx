@@ -263,48 +263,65 @@ function ProjectsPage({ onOpenProject, onMenu }: { onOpenProject: (project: Proj
 
 const budgetSheet = [
   { stage: 'Serviços preliminares', items: [
-    { name: 'Instalação do canteiro de obras', unit: 'vb', qty: 1, price: 8500, start: 0, span: 1 },
-    { name: 'Limpeza e demolições', unit: 'm²', qty: 120, price: 42, start: 0, span: 1 },
+    { name: 'Instalação do canteiro de obras', unit: 'vb', qty: 1, price: 8500, startWeek: 0, spanWeeks: 2 },
+    { name: 'Limpeza e demolições', unit: 'm²', qty: 120, price: 42, startWeek: 1, spanWeeks: 3 },
   ] },
   { stage: 'Estrutura e fundação', items: [
-    { name: 'Concreto usinado FCK 25', unit: 'm³', qty: 48, price: 520, start: 1, span: 2 },
-    { name: 'Armação de aço CA-50', unit: 'kg', qty: 2400, price: 12.8, start: 1, span: 2 },
-    { name: 'Fôrma de madeira para estrutura', unit: 'm²', qty: 310, price: 68, start: 1, span: 1 },
+    { name: 'Concreto usinado FCK 25', unit: 'm³', qty: 48, price: 520, startWeek: 4, spanWeeks: 6 },
+    { name: 'Armação de aço CA-50', unit: 'kg', qty: 2400, price: 12.8, startWeek: 4, spanWeeks: 7 },
+    { name: 'Fôrma de madeira para estrutura', unit: 'm²', qty: 310, price: 68, startWeek: 4, spanWeeks: 4 },
   ] },
   { stage: 'Alvenaria e vedação', items: [
-    { name: 'Alvenaria de bloco cerâmico 14 cm', unit: 'm²', qty: 420, price: 94, start: 3, span: 2 },
-    { name: 'Reboco interno', unit: 'm²', qty: 680, price: 38, start: 4, span: 2 },
+    { name: 'Alvenaria de bloco cerâmico 14 cm', unit: 'm²', qty: 420, price: 94, startWeek: 12, spanWeeks: 8 },
+    { name: 'Reboco interno', unit: 'm²', qty: 680, price: 38, startWeek: 17, spanWeeks: 7 },
   ] },
   { stage: 'Instalações', items: [
-    { name: 'Instalação elétrica completa', unit: 'pto', qty: 86, price: 180, start: 4, span: 2 },
-    { name: 'Instalação hidráulica', unit: 'pto', qty: 42, price: 240, start: 4, span: 2 },
+    { name: 'Instalação elétrica completa', unit: 'pto', qty: 86, price: 180, startWeek: 16, spanWeeks: 8 },
+    { name: 'Instalação hidráulica', unit: 'pto', qty: 42, price: 240, startWeek: 17, spanWeeks: 7 },
   ] },
   { stage: 'Acabamentos', items: [
-    { name: 'Revestimento cerâmico', unit: 'm²', qty: 290, price: 118, start: 6, span: 2 },
-    { name: 'Pintura látex — 2 demãos', unit: 'm²', qty: 680, price: 32, start: 7, span: 1 },
+    { name: 'Revestimento cerâmico', unit: 'm²', qty: 290, price: 118, startWeek: 24, spanWeeks: 7 },
+    { name: 'Pintura látex — 2 demãos', unit: 'm²', qty: 680, price: 32, startWeek: 29, spanWeeks: 3 },
   ] },
 ]
 const budgetMonths = ['Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+const budgetWeeks = Array.from({ length: budgetMonths.length * 4 }, (_, index) => `S${index + 1}`)
 const ganttRows = budgetSheet.flatMap(stage => {
-  const start = Math.min(...stage.items.map(item => item.start))
-  const end = Math.max(...stage.items.map(item => item.start + item.span))
+  const startWeek = Math.min(...stage.items.map(item => item.startWeek))
+  const endWeek = Math.max(...stage.items.map(item => item.startWeek + item.spanWeeks))
   return [
-    { label: stage.stage, start, span: end - start, level: 0 },
-    ...stage.items.map(item => ({ label: item.name, start: item.start, span: item.span, level: 1 })),
+    { label: stage.stage, startWeek, spanWeeks: endWeek - startWeek, level: 0 },
+    ...stage.items.map(item => ({ label: item.name, startWeek: item.startWeek, spanWeeks: item.spanWeeks, level: 1 })),
   ]
 })
 
 function BudgetGantt() {
+  const [scale, setScale] = useState<'month' | 'week'>('month')
+  const columns = scale === 'month' ? budgetMonths : budgetWeeks
+  const template = scale === 'month' ? `repeat(${columns.length}, 1fr)` : `repeat(${columns.length}, minmax(26px, 1fr))`
+  const place = (startWeek: number, spanWeeks: number) => {
+    if (scale === 'week') return { start: startWeek, span: spanWeeks }
+    const start = Math.floor(startWeek / 4)
+    return { start, span: Math.max(1, Math.ceil((startWeek + spanWeeks) / 4) - start) }
+  }
   return (
-    <div className="gantt">
-      <div className="gantt-head"><span>ETAPA / SERVIÇO</span><div className="gantt-months" style={{ gridTemplateColumns: `repeat(${budgetMonths.length}, 1fr)` }}>{budgetMonths.map(month => <span key={month}>{month}</span>)}</div></div>
-      {ganttRows.map(row => <div key={`${row.level}-${row.label}`} className={`gantt-row ${row.level === 0 ? 'gantt-row-stage' : ''}`}>
-        <span className={`gantt-label ${row.level ? 'child' : ''}`} title={row.label}>{row.label}</span>
-        <div className="gantt-track" style={{ gridTemplateColumns: `repeat(${budgetMonths.length}, 1fr)` }}>
-          {budgetMonths.map((month, index) => <i key={month} className="gantt-cell" style={{ gridColumn: index + 1, gridRow: 1 }} />)}
-          <span className={`gantt-bar ${row.level === 0 ? 'stage' : ''}`} style={{ gridColumn: `${row.start + 1} / span ${row.span}`, gridRow: 1 }} title={`${budgetMonths[row.start]} — ${budgetMonths[row.start + row.span - 1]}`} />
-        </div>
-      </div>)}
+    <div className={`gantt ${scale === 'week' ? 'week' : ''}`}>
+      <div className="gantt-scale"><span>Escala</span><div className="segmented budget-view-toggle"><button className={scale === 'month' ? 'active' : ''} onClick={() => setScale('month')}>Mês</button><button className={scale === 'week' ? 'active' : ''} onClick={() => setScale('week')}>Semana</button></div></div>
+      <div className="gantt-scroll">
+        <div className="gantt-head"><span>ETAPA / SERVIÇO</span><div className="gantt-months" style={{ gridTemplateColumns: template }}>{columns.map(label => <span key={label}>{label}</span>)}</div></div>
+        {ganttRows.map(row => {
+          const { start, span } = place(row.startWeek, row.spanWeeks)
+          return (
+            <div key={`${row.level}-${row.label}`} className={`gantt-row ${row.level === 0 ? 'gantt-row-stage' : ''}`}>
+              <span className={`gantt-label ${row.level ? 'child' : ''}`} title={row.label}>{row.label}</span>
+              <div className="gantt-track" style={{ gridTemplateColumns: template }}>
+                {columns.map((label, index) => <i key={label} className="gantt-cell" style={{ gridColumn: index + 1, gridRow: 1 }} />)}
+                <span className={`gantt-bar ${row.level === 0 ? 'stage' : ''}`} style={{ gridColumn: `${start + 1} / span ${span}`, gridRow: 1 }} title={`${columns[start]} — ${columns[Math.min(start + span - 1, columns.length - 1)]}`} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
