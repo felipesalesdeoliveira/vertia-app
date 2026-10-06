@@ -869,3 +869,13 @@ h1, h2, h3, p { margin-top: 0; }
   .budget-meta { grid-template-columns: repeat(2, 1fr); }
   .budget-head, .budget-row { min-width: 760px; }
 }
+
+/* Sidebar — impede que nomes longos (obra/empresa) vazem para fora */
+.workspace-switch { overflow: hidden; }
+.workspace-switch > div { min-width: 0; }
+.workspace-switch strong, .workspace-switch small { display: block; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.engineer-sidebar-project, .client-sidebar-project { width: auto; min-width: 0; }
+.main-nav button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-block { min-width: 0; }
+.user-block > div { min-width: 0; }
+.user-block strong, .user-block small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
