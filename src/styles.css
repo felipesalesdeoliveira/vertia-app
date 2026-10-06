@@ -879,3 +879,51 @@ h1, h2, h3, p { margin-top: 0; }
 .user-block { min-width: 0; }
 .user-block > div { min-width: 0; }
 .user-block strong, .user-block small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Diário de obra — blocos, clima por turno, efetivo e cards */
+.diary-block { padding: 13px 0; border-top: 1px solid #edf0f5; }
+.diary-block-head { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.diary-block-head strong { color: var(--navy); font-size: 10px; }
+.diary-auto { color: var(--blue); background: #eef3ff; font-size: 7px; font-weight: 750; padding: 3px 7px; border-radius: 6px; }
+.diary-tag { font-size: 7px; font-weight: 750; padding: 3px 7px; border-radius: 6px; margin-left: auto; }
+.diary-tag.client { color: #a9641b; background: #fff3dd; }
+.diary-tag.internal { color: #5c6680; background: #eef1f6; }
+.diary-block textarea { width: 100%; min-height: 76px; padding: 10px; border: 1px solid #dfe4ed; border-radius: 9px; background: #fbfcfe; color: var(--navy); font: inherit; font-size: 9px; outline: 0; resize: vertical; }
+.diary-requester { width: 100%; height: 36px; margin-top: 8px; padding: 0 10px; border: 1px solid #dfe4ed; border-radius: 9px; background: #fbfcfe; color: var(--navy); font-size: 9px; outline: 0; }
+.diary-temp { display: flex; gap: 10px; margin-bottom: 10px; }
+.diary-temp label { display: inline-flex; align-items: center; gap: 5px; color: #8d95a7; font-size: 8px; font-weight: 700; }
+.diary-temp input { width: 46px; height: 30px; padding: 0 7px; border: 1px solid #dfe4ed; border-radius: 8px; background: white; color: var(--navy); font-size: 9px; text-align: center; }
+.diary-temp em { font-style: normal; color: #8d95a7; }
+.diary-shift { display: grid; grid-template-columns: 52px 1fr; gap: 9px; align-items: center; margin-bottom: 7px; }
+.diary-shift > span { color: #8d95a7; font-size: 8px; font-weight: 700; }
+.diary-shift > div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.diary-shift button { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 32px; border: 1px solid #e4e9f1; border-radius: 8px; background: #fbfcfe; color: #697187; font: inherit; font-size: 8px; font-weight: 650; }
+.diary-shift button.active { border-color: #8aa4ff; background: #eef3ff; color: var(--blue); }
+.diary-crew > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f4f8; }
+.diary-crew > div:last-child { border-bottom: 0; }
+.diary-crew strong { display: block; color: var(--navy); font-size: 9.5px; }
+.diary-crew small { display: block; color: #8d95a7; font-size: 8px; margin-top: 2px; }
+.diary-counter { display: flex; align-items: center; gap: 4px; }
+.diary-counter button { width: 24px; height: 24px; border: 1px solid #dfe4ed; border-radius: 7px; background: white; color: var(--navy); font-size: 12px; line-height: 1; display: grid; place-items: center; }
+.diary-counter b { min-width: 20px; text-align: center; color: var(--navy); font-size: 10px; }
+.diary-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.diary-chips > span { display: inline-flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 8px; background: #eef1f6; color: var(--navy); font-size: 8.5px; font-weight: 650; }
+.diary-chips button { border: 0; background: transparent; color: #8d95a7; display: grid; place-items: center; padding: 0; }
+.diary-add { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 7px 10px; border: 1px dashed #c3ccda; border-radius: 9px; background: #fbfcfe; color: var(--blue); font: inherit; font-size: 8.5px; font-weight: 700; }
+.diary-cards { display: grid; gap: 10px; }
+.diary-card { padding: 13px; border: 1px solid var(--line); border-radius: 13px; background: white; }
+.diary-card.rascunho { background: #fffdf5; border-color: #f0e3c2; }
+.diary-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.diary-card-top strong { color: var(--navy); font-size: 12px; }
+.diary-card-top em { font-style: normal; font-size: 7px; font-weight: 750; padding: 4px 7px; border-radius: 7px; }
+.diary-card-top em.rascunho { color: #a9641b; background: #fff3dd; }
+.diary-card-top em.submetido { color: #1f6feb; background: #e8f1ff; }
+.diary-card-top em.aprovado { color: #147a59; background: #e7f8f1; }
+.diary-card-date { display: flex; align-items: center; gap: 6px; margin-top: 7px; color: #8c95a7; font-size: 8px; }
+.diary-card-weather { display: flex; gap: 6px; margin-top: 8px; color: var(--blue); }
+.diary-card > p { color: #59647a; font-size: 8.5px; line-height: 1.55; margin: 10px 0; }
+.diary-card-counters { display: flex; align-items: center; gap: 12px; padding-top: 9px; border-top: 1px solid #f1f4f8; }
+.diary-card-counters span { display: inline-flex; align-items: center; gap: 5px; color: #69748b; font-size: 8px; }
+.diary-card-counters em { margin-left: auto; font-style: normal; font-size: 7px; font-weight: 750; padding: 4px 7px; border-radius: 7px; }
+.diary-card-counters em.visible { color: #147a59; background: #e7f8f1; }
+.diary-card-counters em.internal { color: #5c6680; background: #eef1f6; }
