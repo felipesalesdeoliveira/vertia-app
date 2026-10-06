@@ -50,12 +50,6 @@ const navGroups = [
     { id: 'updates' as Page, label: 'Atualizações', icon: Sparkles },
     { id: 'relatorios' as Page, label: 'Relatórios', icon: TrendingUp },
   ] },
-  { label: 'ADMINISTRATIVO', items: [
-    { id: 'administration' as Page, label: 'Painel administrativo', icon: Settings },
-    { id: 'people' as Page, label: 'Perfis e acessos', icon: Users },
-    { id: 'documents' as Page, label: 'Documentos', icon: FolderOpen },
-    { id: 'fornecedores' as Page, label: 'Fornecedores', icon: Building2 },
-  ] },
   { label: 'COMERCIAL', items: [
     { id: 'crm' as Page, label: 'CRM', icon: Filter, count: '9' },
     { id: 'orcamentos' as Page, label: 'Orçamentos', icon: ClipboardCheck },
@@ -69,6 +63,12 @@ const navGroups = [
     { id: 'projects' as Page, label: 'Obras', icon: Building2, count: '4' },
     { id: 'approvals' as Page, label: 'Aprovações', icon: ClipboardCheck },
     { id: 'inventory' as Page, label: 'Estoque', icon: Package },
+  ] },
+  { label: 'ADMINISTRATIVO', items: [
+    { id: 'administration' as Page, label: 'Painel administrativo', icon: Settings },
+    { id: 'people' as Page, label: 'Perfis e acessos', icon: Users },
+    { id: 'documents' as Page, label: 'Documentos', icon: FolderOpen },
+    { id: 'fornecedores' as Page, label: 'Fornecedores', icon: Building2 },
   ] },
 ]
 
