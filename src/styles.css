@@ -491,3 +491,56 @@ h1, h2, h3, p { margin-top: 0; }
   .profile-cards { grid-template-columns: 1fr 1fr; }
   .profile-invite { grid-template-columns: 1fr; }
 }
+
+/* Cliente — melhorias (timeline, prazo, parcelas, histórico, notificações, foto no chat) */
+.client-schedule { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 650; margin: 0; }
+.client-schedule.ok { color: #147a59; }
+.client-schedule.late { color: #c0392b; }
+.client-notif { position: relative; }
+.client-notif .icon-button { position: relative; }
+.client-notif-dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--danger); border: 1.5px solid white; }
+.client-notif-panel { position: absolute; right: 0; top: calc(100% + 8px); width: 290px; background: white; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px rgba(6,21,61,.14); padding: 8px; z-index: 40; }
+.client-notif-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px 8px; }
+.client-notif-head strong { color: var(--navy); font-size: 13px; }
+.client-notif-item { display: grid; grid-template-columns: 30px 1fr; gap: 10px; padding: 9px 8px; border-radius: 10px; }
+.client-notif-item:hover { background: #f5f7fb; }
+.client-notif-item span { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: var(--blue); background: #eef3ff; }
+.client-notif-item p { color: var(--navy); font-size: 12px; margin: 0; }
+.client-notif-item small { color: #8d95a7; font-size: 11px; }
+.client-timeline-card, .client-installments { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: 0 8px 24px rgba(6,21,61,.045); }
+.client-timeline { list-style: none; margin: 12px 0 0; padding: 0; }
+.client-timeline li { position: relative; display: grid; grid-template-columns: 26px 1fr; gap: 12px; padding-bottom: 16px; }
+.client-timeline li:last-child { padding-bottom: 0; }
+.client-timeline li::before { content: ''; position: absolute; left: 11px; top: 24px; bottom: -2px; width: 2px; background: #e4e9f1; }
+.client-timeline li:last-child::before { display: none; }
+.client-timeline-mark { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: #eef1f6; color: #9aa4b6; border: 2px solid #e4e9f1; z-index: 1; }
+.client-timeline li.done .client-timeline-mark { background: #147a59; border-color: #147a59; color: white; }
+.client-timeline li.doing .client-timeline-mark { background: var(--blue); border-color: var(--blue); color: white; }
+.client-timeline li strong { display: block; color: var(--navy); font-size: 14px; }
+.client-timeline li small { color: #8d95a7; font-size: 12px; }
+.client-timeline li.todo strong { color: #9aa4b6; }
+.client-next-due { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #eef3ff; border-radius: 12px; padding: 12px 14px; margin: 10px 0 12px; color: var(--blue); }
+.client-next-due small { display: block; color: #5c6680; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+.client-next-due strong { display: block; color: var(--navy); font-size: 15px; margin: 2px 0; }
+.client-next-due span { color: #5c6680; font-size: 12px; }
+.client-installment-list > div { display: grid; grid-template-columns: 12px 1fr auto auto; gap: 10px; align-items: center; padding: 10px 2px; border-bottom: 1px solid #edf0f4; }
+.client-installment-list > div:last-child { border-bottom: 0; }
+.installment-dot { width: 9px; height: 9px; border-radius: 50%; background: #c7cedb; }
+.installment-dot.paid { background: #27ae60; }
+.installment-dot.due { background: #e2a33b; }
+.installment-dot.future { background: #c7cedb; }
+.client-installment-list strong { display: block; color: var(--navy); font-size: 13px; }
+.client-installment-list small { color: #8d95a7; font-size: 11px; }
+.client-installment-list b { color: var(--navy); font-size: 13px; }
+.client-installment-list em { font-style: normal; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; color: #92601e; background: #fff1d9; }
+.client-installment-list em.paid { color: #147a59; background: #e7f8f1; }
+.client-installment-list em.due { color: #92601e; background: #fff1d9; }
+.client-installment-list em.future { color: #5c6680; background: #eef1f6; }
+.client-history-heading { margin-top: 22px; }
+.client-approval-history > div { display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center; padding: 11px; border: 1px solid var(--line); border-radius: 12px; background: white; margin-bottom: 8px; }
+.client-approval-history strong { display: block; color: var(--navy); font-size: 13px; }
+.client-approval-history small { color: #8d95a7; font-size: 11px; }
+.client-approval-history em { font-style: normal; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 8px; }
+.client-approval-history em.ok { color: #147a59; background: #e7f8f1; }
+.client-approval-history em.adjust { color: #aa6a1e; background: #fff1d9; }
+.client-chat-photo { display: block; max-width: 220px; width: 100%; border-radius: 12px; }
