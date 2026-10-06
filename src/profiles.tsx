@@ -17,11 +17,11 @@ const PROFILE_DETAILS: Record<Profile, string> = {
 }
 
 const initialPeople: Person[] = [
-  { id: 1, name: 'Felipe Sales', email: 'felipe@horizonte.eng.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
-  { id: 2, name: 'Ana Prado', email: 'ana@horizonte.eng.br', profile: 'Financeiro', scope: 'Todas as obras', status: 'Ativo' },
-  { id: 3, name: 'Rafael Costa', email: 'rafael@horizonte.eng.br', profile: 'Engenheiro', scope: '3 obras', status: 'Ativo' },
-  { id: 4, name: 'Camila Nunes', email: 'camila@horizonte.eng.br', profile: 'Engenheiro', scope: '2 obras', status: 'Ativo' },
-  { id: 5, name: 'Bruno Lima', email: 'bruno@horizonte.eng.br', profile: 'Engenheiro', scope: '1 obra', status: 'Ativo' },
+  { id: 1, name: 'Felipe Sales', email: 'felipe@cymaco.eng.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
+  { id: 2, name: 'Ana Prado', email: 'ana@cymaco.eng.br', profile: 'Financeiro', scope: 'Todas as obras', status: 'Ativo' },
+  { id: 3, name: 'Rafael Costa', email: 'rafael@cymaco.eng.br', profile: 'Engenheiro', scope: '3 obras', status: 'Ativo' },
+  { id: 4, name: 'Camila Nunes', email: 'camila@cymaco.eng.br', profile: 'Engenheiro', scope: '2 obras', status: 'Ativo' },
+  { id: 5, name: 'Bruno Lima', email: 'bruno@cymaco.eng.br', profile: 'Engenheiro', scope: '1 obra', status: 'Ativo' },
   { id: 6, name: 'Carlos Mendes', email: 'carlos.mendes@email.com', profile: 'Equipe de campo', scope: 'Residência Alto de Pinheiros', status: 'Ativo' },
   { id: 7, name: 'João Martins', email: 'joao.martins@email.com', profile: 'Equipe de campo', scope: '3 obras', status: 'Ativo' },
   { id: 8, name: 'Marcos Silva', email: 'marcos.silva@email.com', profile: 'Equipe de campo', scope: 'Residência Alto de Pinheiros', status: 'Inativo' },
