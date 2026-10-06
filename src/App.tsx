@@ -522,7 +522,6 @@ function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, m
       <main className="content admin-module-content">
         {page === 'finance' && <>
           <FinanceOverview />
-          <div className="viz-section-heading"><h2>Posição atual</h2><p>Obras em andamento e compromissos de outubro de 2026.</p></div>
           <div className="viz-section-heading"><h2>Contas a receber e a pagar</h2><p>Os dois lados do caixa, no mesmo recorte.</p></div>
           <section className="finance-ledger">
             <div className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Contas a receber</h2><p>Parcelas de contrato dos clientes.</p></div><strong className="ledger-total in">{formatMoney(161950)}</strong></div><LedgerTable rows={receivables} /></div>
