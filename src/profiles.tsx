@@ -1,14 +1,16 @@
-import { useState, type FormEvent } from 'react'
-import { Check, Plus, Search } from './icons'
+import { useState, type Dispatch, type FormEvent, type SetStateAction } from 'react'
+import { Check, Plus, Search, ShieldCheck } from './icons'
 import { initialsOf } from './format'
 import { projects } from './data'
+import { COMPANY_MODULES, type UserAccess } from './access'
 
-const PROFILES = ['Administrador', 'Financeiro', 'Engenheiro', 'Equipe de campo', 'Cliente'] as const
+const PROFILES = ['Master', 'Administrador', 'Financeiro', 'Engenheiro', 'Equipe de campo', 'Cliente'] as const
 type Profile = typeof PROFILES[number]
 type Status = 'Ativo' | 'Inativo' | 'Convite enviado'
 type Person = { id: number; name: string; email: string; profile: Profile; scope: string; status: Status }
 
 const PROFILE_DETAILS: Record<Profile, string> = {
+  Master: 'Acesso total e controle de permissões',
   Administrador: 'Acesso completo à empresa',
   Financeiro: 'Financeiro, notas e fluxo de caixa',
   Engenheiro: 'Gestão das obras em que atua',
@@ -17,7 +19,7 @@ const PROFILE_DETAILS: Record<Profile, string> = {
 }
 
 const initialPeople: Person[] = [
-  { id: 1, name: 'Guilherme Cybulski', email: 'guilherme@cymaco.com.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
+  { id: 1, name: 'Guilherme Cybulski', email: 'guilherme@cymaco.com.br', profile: 'Master', scope: 'Todas as obras', status: 'Ativo' },
   { id: 2, name: 'Taine Garcia', email: 'taine@cymaco.com.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
   { id: 3, name: 'Suéllen Weber', email: 'suellen@cymaco.com.br', profile: 'Financeiro', scope: 'Todas as obras', status: 'Ativo' },
   { id: 4, name: 'Leonardo Alves', email: 'leonardo@cymaco.com.br', profile: 'Engenheiro', scope: '3 obras', status: 'Ativo' },
@@ -33,6 +35,7 @@ const initialPeople: Person[] = [
 
 const MODULES = ['Dashboard da empresa', 'Obras e cronograma', 'Diário de obra', 'Chat da obra', 'Materiais e estoque', 'Medições', 'Financeiro e fluxo de caixa', 'Notas fiscais', 'CRM', 'Documentos', 'Perfis e acessos', 'Portal do cliente']
 const initialPermissions: Record<Profile, string[]> = {
+  Master: MODULES,
   Administrador: MODULES,
   Financeiro: ['Dashboard da empresa', 'Medições', 'Financeiro e fluxo de caixa', 'Notas fiscais', 'Documentos'],
   Engenheiro: ['Obras e cronograma', 'Diário de obra', 'Chat da obra', 'Materiais e estoque', 'Medições', 'Documentos'],
@@ -40,7 +43,7 @@ const initialPermissions: Record<Profile, string[]> = {
   Cliente: ['Documentos', 'Portal do cliente'],
 }
 
-export function ProfilesPage() {
+export function ProfilesPage({ isMaster, userAccess, setUserAccess }: { isMaster: boolean; userAccess: UserAccess; setUserAccess: Dispatch<SetStateAction<UserAccess>> }) {
   const [people, setPeople] = useState(initialPeople)
   const [filter, setFilter] = useState<Profile | 'Todos'>('Todos')
   const [query, setQuery] = useState('')
@@ -98,6 +101,23 @@ export function ProfilesPage() {
             </tr>)}</tbody>
           </table>
           {!visible.length && <p className="kanban-empty">Nenhuma pessoa encontrada</p>}
+        </div>
+      </section>
+
+      <section className="admin-table-panel profile-panel">
+        <div className="admin-panel-heading"><div><h2>Acesso por pessoa</h2><p>{isMaster ? 'Desmarque o que a pessoa não deve ver. Vale sobre o perfil dela.' : 'Somente o perfil Master altera o acesso individual.'}</p></div>{!isMaster && <em className="access-locked"><ShieldCheck size={14} />Somente leitura</em>}</div>
+        <div className="profile-scroll">
+          <table className="permission-table access-table">
+            <thead><tr><th scope="col">Pessoa</th>{COMPANY_MODULES.map(item => <th scope="col" key={item.key}>{item.label}</th>)}</tr></thead>
+            <tbody>{people.filter(person => person.profile !== 'Cliente' && person.profile !== 'Equipe de campo').map(person => <tr key={person.id}>
+              <th scope="row"><span><strong>{person.name}</strong><small>{person.profile}</small></span></th>
+              {COMPANY_MODULES.map(item => {
+                const master = person.profile === 'Master'
+                const allowed = master || userAccess[person.id]?.[item.key] !== false
+                return <td key={item.key}><button className={allowed ? 'allowed' : ''} disabled={!isMaster || master} aria-pressed={allowed} aria-label={`${person.name}: ${item.label}`} onClick={() => setUserAccess(current => ({ ...current, [person.id]: { ...current[person.id], [item.key]: !allowed } }))}>{allowed && <Check size={14} strokeWidth={3} />}</button></td>
+              })}
+            </tr>)}</tbody>
+          </table>
         </div>
       </section>
 

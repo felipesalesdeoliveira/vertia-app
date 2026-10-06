@@ -1042,3 +1042,9 @@ h1, h2, h3, p { margin-top: 0; }
 .ledger-table article > em.warn { color: #a66a1c; background: #fff2de; }
 .ledger-table article > em.future { color: #5c6680; background: #eef1f6; }
 @media (max-width: 900px) { .finance-ledger { grid-template-columns: 1fr; } }
+
+/* Acesso por pessoa — matriz controlada pelo perfil Master */
+.access-locked { display: inline-flex; align-items: center; gap: 6px; font-style: normal; color: #5c6680; background: #eef1f6; font-size: 8px; font-weight: 750; padding: 5px 9px; border-radius: 8px; }
+.access-table th[scope="row"] strong { display: block; color: var(--navy); font-size: 10px; }
+.access-table th[scope="row"] small { display: block; color: #8d95a7; font-size: 8px; margin-top: 3px; }
+.access-table button:disabled { opacity: .45; cursor: not-allowed; }

@@ -7,6 +7,7 @@ import {
   ShieldCheck, Smartphone, Sparkles, Sun, Cloud, CloudRain, Trash2, TrendingUp, Upload, UserRound, Users, X,
 } from './icons'
 import { formatMoney, formatNumber } from './format'
+import { COMPANY_MODULES, isPageEnabled, isPageVisibleTo, type Modules, type UserAccess } from './access'
 import { initialUpdates, projects, type Project, type Update } from './data'
 import { CrmBoard, initialLeads, isOpenLead, type Lead } from './crm'
 import { CashFlow, FinanceOverview } from './finance'
@@ -14,35 +15,7 @@ import { ProfilesPage } from './profiles'
 
 type ViewMode = 'company' | 'client'
 type Page = 'dashboard' | 'projects' | 'finance' | 'cashflow' | 'crm' | 'inventory' | 'invoices' | 'administration' | 'documents' | 'updates' | 'approvals' | 'people' | 'settings' | 'fornecedores' | 'relatorios' | 'orcamentos'
-type Role = 'admin' | 'engineer' | 'field' | 'client'
-
-const COMPANY_MODULES = [
-  { key: 'crm', label: 'CRM', desc: 'Funil comercial, leads e propostas' },
-  { key: 'orcamentos', label: 'Orçamentos', desc: 'Planilhas de orçamento, BDI e propostas' },
-  { key: 'finance', label: 'Financeiro', desc: 'Painel financeiro, fluxo de caixa e notas fiscais' },
-  { key: 'inventory', label: 'Estoque', desc: 'Materiais, saldos e movimentações' },
-  { key: 'fornecedores', label: 'Fornecedores', desc: 'Cadastro e desempenho de prestadores' },
-  { key: 'relatorios', label: 'Relatórios', desc: 'Relatórios consolidados e exportação' },
-  { key: 'documents', label: 'Documentos', desc: 'Biblioteca de arquivos da empresa' },
-  { key: 'approvals', label: 'Aprovações', desc: 'Decisões do cliente nas obras' },
-  { key: 'updates', label: 'Atualizações', desc: 'Feed de registros das obras' },
-]
-const MODULE_PAGES: Record<string, Page[]> = {
-  crm: ['crm'],
-  orcamentos: ['orcamentos'],
-  finance: ['finance', 'cashflow', 'invoices'],
-  inventory: ['inventory'],
-  fornecedores: ['fornecedores'],
-  relatorios: ['relatorios'],
-  documents: ['documents'],
-  approvals: ['approvals'],
-  updates: ['updates'],
-}
-type Modules = Record<string, boolean>
-const isPageEnabled = (page: Page, modules: Modules) => {
-  const key = Object.keys(MODULE_PAGES).find(moduleKey => MODULE_PAGES[moduleKey].includes(page))
-  return !key || modules[key] !== false
-}
+type Role = 'master' | 'admin' | 'engineer' | 'field' | 'client'
 
 const navGroups = [
   { label: 'VISÃO GERAL', items: [
@@ -165,7 +138,7 @@ function StatusBadge({ status }: { status: Project['status'] }) {
   return <span className={`status status-${status.toLowerCase().replace(' ', '-')}`}><span />{status}</span>
 }
 
-function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, crmCount, modules }: {
+function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, crmCount, modules, access }: {
   page: Page
   setPage: (page: Page) => void
   view: ViewMode
@@ -176,11 +149,14 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
   onLogout: () => void
   crmCount: number
   modules: Modules
+  access?: Record<string, boolean>
 }) {
   const { collapsed, toggleGroup } = useCollapsedGroups('vertia-nav-company')
   const profile = role === 'engineer'
     ? { initials: 'LA', name: 'Leonardo Alves', label: 'Engenheiro' }
-    : { initials: 'FS', name: 'Felipe Sales', label: 'Administrador' }
+    : role === 'master'
+      ? { initials: 'GC', name: 'Guilherme Cybulski', label: 'Master' }
+      : { initials: 'FS', name: 'Felipe Sales', label: 'Administrador' }
   return (
     <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
       <div className="sidebar-top">
@@ -194,7 +170,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
       </div>
       <nav className="main-nav">
         {navGroups.map((group, index) => {
-          const items = group.items.filter(item => isPageEnabled(item.id, modules))
+          const items = group.items.filter(item => isPageEnabled(item.id, modules) && isPageVisibleTo(item.id, access))
           if (!items.length) return null
           const hasActive = items.some(item => item.id === page && view === 'company')
           const isCollapsed = Boolean(collapsed[group.label]) && !hasActive
@@ -487,7 +463,7 @@ function BudgetSheet({ bdi }: { bdi: number }) {
   )
 }
 
-function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, modules, setModules }: { page: Page; updates: Update[]; onMenu: () => void; onNavigate: (page: Page) => void; leads: Lead[]; setLeads: Dispatch<SetStateAction<Lead[]>>; modules: Modules; setModules: Dispatch<SetStateAction<Modules>> }) {
+function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, modules, setModules, isMaster, userAccess, setUserAccess }: { page: Page; updates: Update[]; onMenu: () => void; onNavigate: (page: Page) => void; leads: Lead[]; setLeads: Dispatch<SetStateAction<Lead[]>>; modules: Modules; setModules: Dispatch<SetStateAction<Modules>>; isMaster: boolean; userAccess: UserAccess; setUserAccess: Dispatch<SetStateAction<UserAccess>> }) {
   const [invoiceSaved, setInvoiceSaved] = useState(false)
   const [invoiceForm, setInvoiceForm] = useState({ number: '', supplier: '', project: projects[0].name, value: '' })
   const [selectedBudget, setSelectedBudget] = useState(budgetList[0].id)
@@ -537,7 +513,7 @@ function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, m
           <CrmBoard leads={leads} setLeads={setLeads} />
         </>}
 
-        {page === 'people' && <ProfilesPage />}
+        {page === 'people' && <ProfilesPage isMaster={isMaster} userAccess={userAccess} setUserAccess={setUserAccess} />}
 
         {page === 'inventory' && <>
           <section className="admin-summary-grid inventory-summary"><article><span className="admin-summary-icon revenue"><FolderOpen size={20} /></span><div><small>VALOR EM ESTOQUE</small><strong>R$ 86.420</strong><p>Distribuído em 4 obras</p></div></article><article><span className="admin-summary-icon receive"><ClipboardCheck size={20} /></span><div><small>ITENS CADASTRADOS</small><strong>184</strong><p>32 categorias</p></div></article><article><span className="admin-summary-icon expense"><Bell size={20} /></span><div><small>ESTOQUE BAIXO</small><strong>7</strong><p>Precisam de reposição</p></div></article><article><span className="admin-summary-icon result"><CheckCircle2 size={20} /></span><div><small>MOVIMENTAÇÕES</small><strong>46</strong><p>Nos últimos 7 dias</p></div></article></section>
@@ -672,13 +648,15 @@ function LoginScreen({ onLogin }: { onLogin: (role: Role) => void }) {
       return
     }
     const normalized = email.toLowerCase()
-    if (normalized.includes('cliente')) onLogin('client')
+    if (normalized.includes('master')) onLogin('master')
+    else if (normalized.includes('cliente')) onLogin('client')
     else if (normalized.includes('campo')) onLogin('field')
     else if (normalized.includes('engenheiro')) onLogin('engineer')
     else onLogin('admin')
   }
 
   const demoProfiles: Array<{ role: Role; label: string; detail: string; icon: typeof UserRound }> = [
+    { role: 'master', label: 'Master', detail: 'Define quem vê o quê', icon: ShieldCheck },
     { role: 'admin', label: 'Administrador', detail: 'Gestão completa', icon: LayoutDashboard },
     { role: 'engineer', label: 'Engenheiro', detail: 'Gestão das obras', icon: HardHat },
     { role: 'field', label: 'Equipe de campo', detail: 'Registro rápido', icon: Smartphone },
@@ -1372,6 +1350,12 @@ export default function App() {
   const [modules, setModules] = useState<Modules>(() => {
     try { const stored = window.localStorage.getItem('vertia-modules'); return stored ? JSON.parse(stored) as Modules : {} } catch { return {} }
   })
+  const [userAccess, setUserAccess] = useState<UserAccess>(() => {
+    try { const stored = window.localStorage.getItem('vertia-user-access'); return stored ? JSON.parse(stored) as UserAccess : {} } catch { return {} }
+  })
+  useEffect(() => {
+    try { window.localStorage.setItem('vertia-user-access', JSON.stringify(userAccess)) } catch { /* armazenamento indisponível */ }
+  }, [userAccess])
   useEffect(() => {
     try { window.localStorage.setItem('vertia-modules', JSON.stringify(modules)) } catch { /* armazenamento indisponível */ }
   }, [modules])
@@ -1387,6 +1371,9 @@ export default function App() {
   const saveUpdate = (update: Update) => { setUpdates(current => [update, ...current]); setModal(false) }
   const logout = () => { setRole(null); setView('company'); setPage('dashboard'); setSelectedProject(null); setModal(false) }
 
+  const currentUserId = role === 'master' ? 1 : 5
+  const currentAccess = role === 'master' ? undefined : userAccess[currentUserId]
+
   if (!role) return <LoginScreen onLogin={(nextRole) => { setRole(nextRole); setView(nextRole === 'client' ? 'client' : 'company') }} />
   if (role === 'field') return <FieldPortal assignedProjects={projects.slice(0, 3)} onLogout={logout} />
   if (role === 'engineer') return <EngineerPortal assignedProjects={projects.slice(0, 3)} onLogout={logout} />
@@ -1395,13 +1382,13 @@ export default function App() {
 
   return (
     <div className={`app-shell ${menuOpen ? 'menu-open' : ''}`}>
-      <Sidebar page={page} setPage={(next) => { setPage(next); setSelectedProject(null) }} view={view} setView={setView} open={menuOpen} onClose={() => setMenuOpen(false)} role={role} onLogout={logout} crmCount={leads.filter(isOpenLead).length} modules={modules} />
+      <Sidebar page={page} setPage={(next) => { setPage(next); setSelectedProject(null) }} view={view} setView={setView} open={menuOpen} onClose={() => setMenuOpen(false)} role={role} onLogout={logout} crmCount={leads.filter(isOpenLead).length} modules={modules} access={currentAccess} />
       {menuOpen && <button className="sidebar-overlay" onClick={() => setMenuOpen(false)} aria-label="Fechar menu" />}
       <div className="main-shell">
         {selectedProject ? <ProjectDetail project={selectedProject} updates={updates} onBack={() => setSelectedProject(null)} onClient={() => setView('client')} onNewUpdate={() => setModal(true)} /> :
           page === 'dashboard' ? <Dashboard updates={updates} onOpenProject={openProject} onNewUpdate={() => setModal(true)} onMenu={() => setMenuOpen(true)} onNavigate={setPage} /> :
             page === 'projects' ? <ProjectsPage onOpenProject={openProject} onMenu={() => setMenuOpen(true)} /> :
-              (['finance', 'cashflow', 'crm', 'inventory', 'invoices', 'administration', 'people', 'documents', 'updates', 'approvals', 'settings', 'fornecedores', 'relatorios', 'orcamentos'] as Page[]).includes(page) ? <AdminModulePage page={page} updates={updates} onMenu={() => setMenuOpen(true)} onNavigate={setPage} leads={leads} setLeads={setLeads} modules={modules} setModules={setModules} /> : <GenericPage page={page} updates={updates} onMenu={() => setMenuOpen(true)} />}
+              (['finance', 'cashflow', 'crm', 'inventory', 'invoices', 'administration', 'people', 'documents', 'updates', 'approvals', 'settings', 'fornecedores', 'relatorios', 'orcamentos'] as Page[]).includes(page) ? <AdminModulePage page={page} updates={updates} onMenu={() => setMenuOpen(true)} onNavigate={setPage} leads={leads} setLeads={setLeads} modules={modules} setModules={setModules} isMaster={role === 'master'} userAccess={userAccess} setUserAccess={setUserAccess} /> : <GenericPage page={page} updates={updates} onMenu={() => setMenuOpen(true)} />}
       </div>
       {modal && <NewUpdateModal onClose={() => setModal(false)} onSave={saveUpdate} />}
     </div>
