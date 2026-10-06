@@ -1048,3 +1048,8 @@ h1, h2, h3, p { margin-top: 0; }
 .access-table th[scope="row"] strong { display: block; color: var(--navy); font-size: 10px; }
 .access-table th[scope="row"] small { display: block; color: #8d95a7; font-size: 8px; margin-top: 3px; }
 .access-table button:disabled { opacity: .45; cursor: not-allowed; }
+.modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 640px) { .modal-row { grid-template-columns: 1fr; } .header-action { width: 38px; padding: 0; font-size: 0; } }
+/* O modal estilizava só input/textarea; o select ficava com aparência nativa */
+.modal select { width: 100%; margin-top: 7px; padding: 10px 11px; border: 1px solid #dce1eb; border-radius: 9px; color: var(--navy); background: white; font: inherit; font-size: 11px; outline: none; }
+.modal select:focus { border-color: #8ba6ff; box-shadow: 0 0 0 3px rgba(22,76,255,.08); }

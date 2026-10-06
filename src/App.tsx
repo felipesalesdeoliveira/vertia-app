@@ -138,7 +138,7 @@ function StatusBadge({ status }: { status: Project['status'] }) {
   return <span className={`status status-${status.toLowerCase().replace(' ', '-')}`}><span />{status}</span>
 }
 
-function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, crmCount, modules, access }: {
+function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, crmCount, projectCount, modules, access }: {
   page: Page
   setPage: (page: Page) => void
   view: ViewMode
@@ -148,6 +148,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
   role: Role
   onLogout: () => void
   crmCount: number
+  projectCount: number
   modules: Modules
   access?: Record<string, boolean>
 }) {
@@ -176,7 +177,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
           const isCollapsed = Boolean(collapsed[group.label]) && !hasActive
           return <div className="nav-group" key={group.label}>
             <NavGroupLabel label={group.label} spaced={index > 0} collapsed={isCollapsed} onToggle={() => toggleGroup(group.label)} />
-            {!isCollapsed && items.map(({ id, label, icon: Icon, count }) => <button key={id} className={page === id && view === 'company' ? 'active' : ''} onClick={() => { setPage(id); setView('company'); onClose() }}><Icon size={19} /><span>{label}</span>{count && <em>{id === 'crm' ? crmCount : count}</em>}</button>)}
+            {!isCollapsed && items.map(({ id, label, icon: Icon, count }) => <button key={id} className={page === id && view === 'company' ? 'active' : ''} onClick={() => { setPage(id); setView('company'); onClose() }}><Icon size={19} /><span>{label}</span>{count && <em>{id === 'crm' ? crmCount : id === 'projects' ? projectCount : count}</em>}</button>)}
           </div>
         })}
         <div className="nav-group">
@@ -202,7 +203,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
   )
 }
 
-function Header({ title, subtitle, onMenu, onNewUpdate }: { title: string; subtitle?: string; onMenu: () => void; onNewUpdate?: () => void }) {
+function Header({ title, subtitle, onMenu, onNewUpdate, onNewProject }: { title: string; subtitle?: string; onMenu: () => void; onNewUpdate?: () => void; onNewProject?: () => void }) {
   return (
     <header className="topbar">
       <button className="menu-button icon-button" onClick={onMenu} aria-label="Abrir menu"><Menu size={21} /></button>
@@ -210,6 +211,7 @@ function Header({ title, subtitle, onMenu, onNewUpdate }: { title: string; subti
       <div className="topbar-actions">
         <div className="search"><Search size={18} /><input placeholder="Buscar na Vértia" /><kbd>⌘ K</kbd></div>
         <button className="icon-button notification"><Bell size={20} /><span /></button>
+        {onNewProject && <button className="secondary-button header-action" onClick={onNewProject}><Building2 size={18} />Nova obra</button>}
         {onNewUpdate && <button className="primary-button" onClick={onNewUpdate}><Plus size={18} />Nova atualização</button>}
       </div>
     </header>
@@ -258,7 +260,7 @@ function ActivityItem({ item }: { item: Update }) {
   )
 }
 
-function Dashboard({ updates, onOpenProject, onNewUpdate, onMenu, onNavigate }: { updates: Update[]; onOpenProject: (project: Project) => void; onNewUpdate: () => void; onMenu: () => void; onNavigate: (page: Page) => void }) {
+function Dashboard({ updates, projects, onOpenProject, onNewUpdate, onNewProject, onMenu, onNavigate }: { updates: Update[]; projects: Project[]; onOpenProject: (project: Project) => void; onNewUpdate: () => void; onNewProject: () => void; onMenu: () => void; onNavigate: (page: Page) => void }) {
   const [range, setRange] = useState(12)
   const months = dashboardMonths.slice(-range)
   const revenue = revenueByMonth.slice(-range)
@@ -267,7 +269,7 @@ function Dashboard({ updates, onOpenProject, onNewUpdate, onMenu, onNavigate }: 
   const works = activeWorksByMonth.slice(-range)
   return (
     <>
-      <Header title="Bom dia, Felipe" subtitle="Veja o que está acontecendo nas suas obras hoje." onMenu={onMenu} onNewUpdate={onNewUpdate} />
+      <Header title="Bom dia, Felipe" subtitle="Veja o que está acontecendo nas suas obras hoje." onMenu={onMenu} onNewUpdate={onNewUpdate} onNewProject={onNewProject} />
       <main className="content dashboard-content">
         <section className="metrics-grid">
           <MetricCard label="Obras ativas" value="4" helper="1 exige atenção" icon={Building2} tone="blue" />
@@ -316,14 +318,14 @@ function Dashboard({ updates, onOpenProject, onNewUpdate, onMenu, onNavigate }: 
   )
 }
 
-function ProjectsPage({ onOpenProject, onMenu }: { onOpenProject: (project: Project) => void; onMenu: () => void }) {
+function ProjectsPage({ projects, onOpenProject, onNewProject, onMenu }: { projects: Project[]; onOpenProject: (project: Project) => void; onNewProject: () => void; onMenu: () => void }) {
   const [filter, setFilter] = useState('Todas')
   const filtered = filter === 'Todas' ? projects : projects.filter(p => p.status === filter)
   return (
     <>
       <Header title="Obras" subtitle="Gerencie todas as obras em um único lugar." onMenu={onMenu} />
       <main className="content">
-        <div className="page-actions"><div className="segmented">{['Todas', 'Em andamento', 'Atenção', 'Planejada'].map(item => <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>{item}</button>)}</div><button className="primary-button"><Plus size={18} />Criar obra</button></div>
+        <div className="page-actions"><div className="segmented">{['Todas', 'Em andamento', 'Atenção', 'Planejada'].map(item => <button key={item} className={filter === item ? 'active' : ''} onClick={() => setFilter(item)}>{item}</button>)}</div><button className="primary-button" onClick={onNewProject}><Plus size={18} />Criar obra</button></div>
         <div className="projects-page-grid">{filtered.map(project => <ProjectCard key={project.id} project={project} onClick={() => onOpenProject(project)} />)}</div>
       </main>
     </>
@@ -463,7 +465,7 @@ function BudgetSheet({ bdi }: { bdi: number }) {
   )
 }
 
-function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, modules, setModules, isMaster, userAccess, setUserAccess }: { page: Page; updates: Update[]; onMenu: () => void; onNavigate: (page: Page) => void; leads: Lead[]; setLeads: Dispatch<SetStateAction<Lead[]>>; modules: Modules; setModules: Dispatch<SetStateAction<Modules>>; isMaster: boolean; userAccess: UserAccess; setUserAccess: Dispatch<SetStateAction<UserAccess>> }) {
+function AdminModulePage({ page, updates, projects, onMenu, onNavigate, leads, setLeads, modules, setModules, isMaster, userAccess, setUserAccess }: { page: Page; updates: Update[]; projects: Project[]; onMenu: () => void; onNavigate: (page: Page) => void; leads: Lead[]; setLeads: Dispatch<SetStateAction<Lead[]>>; modules: Modules; setModules: Dispatch<SetStateAction<Modules>>; isMaster: boolean; userAccess: UserAccess; setUserAccess: Dispatch<SetStateAction<UserAccess>> }) {
   const [invoiceSaved, setInvoiceSaved] = useState(false)
   const [invoiceForm, setInvoiceForm] = useState({ number: '', supplier: '', project: projects[0].name, value: '' })
   const [selectedBudget, setSelectedBudget] = useState(budgetList[0].id)
@@ -1316,6 +1318,42 @@ function ClientPortal({ project: fixedProject, assignedProjects, updates, onComp
   )
 }
 
+function NewProjectModal({ onClose, onSave }: { onClose: () => void; onSave: (project: Project) => void }) {
+  const tones = ['violet', 'blue', 'cyan', 'navy']
+  const [form, setForm] = useState({ name: '', client: '', location: 'Florianópolis, SC', manager: 'Leonardo Alves', deadline: '', status: 'Planejada' as Project['status'] })
+  const save = () => {
+    if (!form.name.trim() || !form.client.trim()) return
+    onSave({
+      id: Date.now(),
+      name: form.name.trim(),
+      client: form.client.trim(),
+      manager: form.manager,
+      status: form.status,
+      progress: 0,
+      deadline: form.deadline.trim() || 'a definir',
+      location: form.location,
+      pending: 0,
+      tone: tones[Math.floor(Math.random() * tones.length)],
+    })
+  }
+  return (
+    <div className="modal-backdrop" onMouseDown={onClose}>
+      <div className="modal" onMouseDown={event => event.stopPropagation()}>
+        <div className="modal-header"><div><span className="eyebrow">CADASTRAR</span><h2>Nova obra</h2><p>O cronograma, o orçamento e a equipe são configurados depois.</p></div><button className="icon-button" onClick={onClose}><X size={20} /></button></div>
+        <label>Nome da obra<input value={form.name} onChange={event => setForm(current => ({ ...current, name: event.target.value }))} placeholder="Ex.: Ed. Jardim Atlântico" autoFocus /></label>
+        <label>Contratante<input value={form.client} onChange={event => setForm(current => ({ ...current, client: event.target.value }))} placeholder="Ex.: Condomínio Jardim Atlântico" /></label>
+        <label>Endereço<input value={form.location} onChange={event => setForm(current => ({ ...current, location: event.target.value }))} /></label>
+        <div className="modal-row">
+          <label>Responsável<select value={form.manager} onChange={event => setForm(current => ({ ...current, manager: event.target.value }))}><option>Leonardo Alves</option><option>Taine Garcia</option><option>Guilherme Cybulski</option></select></label>
+          <label>Previsão de entrega<input value={form.deadline} onChange={event => setForm(current => ({ ...current, deadline: event.target.value }))} placeholder="Ex.: 30 jun 2027" /></label>
+        </div>
+        <label>Situação<select value={form.status} onChange={event => setForm(current => ({ ...current, status: event.target.value as Project['status'] }))}><option>Planejada</option><option>Em andamento</option><option>Atenção</option></select></label>
+        <div className="modal-footer"><button className="secondary-button" onClick={onClose}>Cancelar</button><button className="primary-button" onClick={save} disabled={!form.name.trim() || !form.client.trim()}><Check size={18} />Cadastrar obra</button></div>
+      </div>
+    </div>
+  )
+}
+
 function NewUpdateModal({ onClose, onSave }: { onClose: () => void; onSave: (update: Update) => void }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -1344,6 +1382,8 @@ export default function App() {
   const [page, setPage] = useState<Page>('dashboard')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [updates, setUpdates] = useState<Update[]>(initialUpdates)
+  const [projectList, setProjectList] = useState<Project[]>(projects)
+  const [projectModal, setProjectModal] = useState(false)
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [modal, setModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -1382,15 +1422,16 @@ export default function App() {
 
   return (
     <div className={`app-shell ${menuOpen ? 'menu-open' : ''}`}>
-      <Sidebar page={page} setPage={(next) => { setPage(next); setSelectedProject(null) }} view={view} setView={setView} open={menuOpen} onClose={() => setMenuOpen(false)} role={role} onLogout={logout} crmCount={leads.filter(isOpenLead).length} modules={modules} access={currentAccess} />
+      <Sidebar page={page} setPage={(next) => { setPage(next); setSelectedProject(null) }} view={view} setView={setView} open={menuOpen} onClose={() => setMenuOpen(false)} role={role} onLogout={logout} crmCount={leads.filter(isOpenLead).length} projectCount={projectList.length} modules={modules} access={currentAccess} />
       {menuOpen && <button className="sidebar-overlay" onClick={() => setMenuOpen(false)} aria-label="Fechar menu" />}
       <div className="main-shell">
         {selectedProject ? <ProjectDetail project={selectedProject} updates={updates} onBack={() => setSelectedProject(null)} onClient={() => setView('client')} onNewUpdate={() => setModal(true)} /> :
-          page === 'dashboard' ? <Dashboard updates={updates} onOpenProject={openProject} onNewUpdate={() => setModal(true)} onMenu={() => setMenuOpen(true)} onNavigate={setPage} /> :
-            page === 'projects' ? <ProjectsPage onOpenProject={openProject} onMenu={() => setMenuOpen(true)} /> :
-              (['finance', 'cashflow', 'crm', 'inventory', 'invoices', 'administration', 'people', 'documents', 'updates', 'approvals', 'settings', 'fornecedores', 'relatorios', 'orcamentos'] as Page[]).includes(page) ? <AdminModulePage page={page} updates={updates} onMenu={() => setMenuOpen(true)} onNavigate={setPage} leads={leads} setLeads={setLeads} modules={modules} setModules={setModules} isMaster={role === 'master'} userAccess={userAccess} setUserAccess={setUserAccess} /> : <GenericPage page={page} updates={updates} onMenu={() => setMenuOpen(true)} />}
+          page === 'dashboard' ? <Dashboard updates={updates} projects={projectList} onOpenProject={openProject} onNewUpdate={() => setModal(true)} onNewProject={() => setProjectModal(true)} onMenu={() => setMenuOpen(true)} onNavigate={setPage} /> :
+            page === 'projects' ? <ProjectsPage projects={projectList} onOpenProject={openProject} onNewProject={() => setProjectModal(true)} onMenu={() => setMenuOpen(true)} /> :
+              (['finance', 'cashflow', 'crm', 'inventory', 'invoices', 'administration', 'people', 'documents', 'updates', 'approvals', 'settings', 'fornecedores', 'relatorios', 'orcamentos'] as Page[]).includes(page) ? <AdminModulePage page={page} updates={updates} projects={projectList} onMenu={() => setMenuOpen(true)} onNavigate={setPage} leads={leads} setLeads={setLeads} modules={modules} setModules={setModules} isMaster={role === 'master'} userAccess={userAccess} setUserAccess={setUserAccess} /> : <GenericPage page={page} updates={updates} onMenu={() => setMenuOpen(true)} />}
       </div>
       {modal && <NewUpdateModal onClose={() => setModal(false)} onSave={saveUpdate} />}
+      {projectModal && <NewProjectModal onClose={() => setProjectModal(false)} onSave={project => { setProjectList(current => [project, ...current]); setProjectModal(false); setPage('projects') }} />}
     </div>
   )
 }
