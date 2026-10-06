@@ -938,3 +938,7 @@ h1, h2, h3, p { margin-top: 0; }
 .main-nav button { font-size: 10px; }
 .main-nav .nav-label-toggle.nav-label-spaced { margin-top: 20px; }
 .main-nav .nav-label-toggle:hover { color: #9fb0d8; }
+/* A marca comemorativa já traz o fundo vermelho: sem moldura branca */
+.workspace-avatar.company { background: transparent; padding: 0; }
+.workspace-avatar.company img { object-fit: cover; border-radius: 9px; }
+.settings-company-logo img { background: transparent; }
