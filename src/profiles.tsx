@@ -17,11 +17,11 @@ const PROFILE_DETAILS: Record<Profile, string> = {
 }
 
 const initialPeople: Person[] = [
-  { id: 1, name: 'Felipe Sales', email: 'felipe@cymaco.eng.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
-  { id: 2, name: 'Ana Prado', email: 'ana@cymaco.eng.br', profile: 'Financeiro', scope: 'Todas as obras', status: 'Ativo' },
-  { id: 3, name: 'Rafael Costa', email: 'rafael@cymaco.eng.br', profile: 'Engenheiro', scope: '3 obras', status: 'Ativo' },
-  { id: 4, name: 'Camila Nunes', email: 'camila@cymaco.eng.br', profile: 'Engenheiro', scope: '2 obras', status: 'Ativo' },
-  { id: 5, name: 'Bruno Lima', email: 'bruno@cymaco.eng.br', profile: 'Engenheiro', scope: '1 obra', status: 'Ativo' },
+  { id: 1, name: 'Guilherme Cybulski', email: 'guilherme@cymaco.com.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
+  { id: 2, name: 'Taine Garcia', email: 'taine@cymaco.com.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
+  { id: 3, name: 'Suéllen Weber', email: 'suellen@cymaco.com.br', profile: 'Financeiro', scope: 'Todas as obras', status: 'Ativo' },
+  { id: 4, name: 'Leonardo Alves', email: 'leonardo@cymaco.com.br', profile: 'Engenheiro', scope: '3 obras', status: 'Ativo' },
+  { id: 5, name: 'Felipe Sales', email: 'felipe@cymaco.com.br', profile: 'Administrador', scope: 'Todas as obras', status: 'Ativo' },
   { id: 6, name: 'Carlos Mendes', email: 'carlos.mendes@email.com', profile: 'Equipe de campo', scope: 'Ed. El Greco — Recuperação de fachada', status: 'Ativo' },
   { id: 7, name: 'João Martins', email: 'joao.martins@email.com', profile: 'Equipe de campo', scope: '3 obras', status: 'Ativo' },
   { id: 8, name: 'Marcos Silva', email: 'marcos.silva@email.com', profile: 'Equipe de campo', scope: 'Ed. El Greco — Recuperação de fachada', status: 'Inativo' },
