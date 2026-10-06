@@ -955,3 +955,13 @@ h1, h2, h3, p { margin-top: 0; }
   .login-brand-panel .logo { width: 112px; }
   .login-brand-panel .login-brand-copy h1 { font-size: 21px; }
 }
+
+/* Engenheiro no celular: cabeçalho sem a logo para o seletor de obra respirar */
+@media (max-width: 640px) {
+  .engineer-app:not(.engineer-picker-app) .engineer-header .logo.compact { display: none; }
+  .engineer-header { gap: 10px; padding-inline: 12px; height: 60px; }
+  .engineer-menu-button { width: 38px; height: 38px; }
+  .engineer-project-switch { padding: 7px 11px; }
+  .engineer-project-switch strong { max-width: none; font-size: 10px; }
+  .engineer-project-switch small { font-size: 7px; }
+}
