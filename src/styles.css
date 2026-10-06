@@ -1003,3 +1003,8 @@ h1, h2, h3, p { margin-top: 0; }
 .viz-bar { width: 12px; }
 .viz-axis small { font-size: 7.5px; }
 @media (max-width: 640px) { .viz-plot, .viz-axis { gap: 3px; } .viz-bar { width: 7px; } }
+
+/* Filtro de período — uma linha acima dos gráficos, à esquerda, escopo para os três */
+.viz-filter { display: flex; align-items: center; gap: 11px; }
+.viz-filter > span { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.viz-filter .segmented button { font-size: 9px; padding: 7px 11px; }
