@@ -113,11 +113,11 @@ function NavGroupLabel({ label, spaced, collapsed, onToggle }: { label: string; 
   )
 }
 
-const dashboardMonths = ['Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
-const activeWorksByMonth = [2, 2, 3, 3, 4, 4, 4, 3]
-const revenueByMonth = [62, 71, 86, 94, 108, 121, 115, 98]
-const costByMonth = [48, 55, 63, 70, 77, 84, 80, 69]
-const contractsByMonth = [1, 0, 2, 1, 2, 3, 1, 2]
+const dashboardMonths = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+const activeWorksByMonth = [1, 1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 3]
+const revenueByMonth = [38, 44, 52, 58, 62, 71, 86, 94, 108, 121, 115, 98]
+const costByMonth = [31, 35, 41, 45, 48, 55, 63, 70, 77, 84, 80, 69]
+const contractsByMonth = [0, 1, 1, 2, 1, 0, 2, 1, 2, 3, 1, 2]
 
 function CountChart({ values, aria, suffix }: { values: number[]; aria: string; suffix: string }) {
   const max = Math.max(...values)
@@ -297,7 +297,7 @@ function Dashboard({ updates, onOpenProject, onNewUpdate, onMenu, onNavigate }: 
         <section className="admin-dashboard-shortcuts"><button onClick={() => onNavigate('finance')}><span className="admin-shortcut-icon finance"><ClipboardCheck size={20} /></span><div><strong>Financeiro</strong><small>R$ 184 mil a receber</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('crm')}><span className="admin-shortcut-icon crm"><Users size={20} /></span><div><strong>CRM</strong><small>9 leads ativos no funil</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('inventory')}><span className="admin-shortcut-icon stock"><FolderOpen size={20} /></span><div><strong>Estoque</strong><small>7 itens com saldo baixo</small></div><ChevronRight size={17} /></button><button onClick={() => onNavigate('invoices')}><span className="admin-shortcut-icon invoice"><FileText size={20} /></span><div><strong>Notas fiscais</strong><small>3 aguardando vínculo</small></div><ChevronRight size={17} /></button></section>
 
         <section className="dashboard-charts">
-          <div className="admin-panel chart-wide"><div className="admin-panel-heading"><div><h2>Receita e despesa por mês</h2><p>Últimos 8 meses, em milhares de reais.</p></div><button onClick={() => onNavigate('finance')}>Ver financeiro</button></div><RevenueCostChart /></div>
+          <div className="admin-panel chart-wide"><div className="admin-panel-heading"><div><h2>Receita e despesa por mês</h2><p>Janeiro a dezembro de 2026, em milhares de reais.</p></div><button onClick={() => onNavigate('finance')}>Ver financeiro</button></div><RevenueCostChart /></div>
           <div className="admin-panel"><div className="admin-panel-heading"><div><h2>Contratos fechados por mês</h2><p>Propostas que viraram obra.</p></div><button onClick={() => onNavigate('orcamentos')}>Ver orçamentos</button></div><CountChart values={contractsByMonth} aria="Contratos fechados por mês" suffix="contratos" /></div>
           <div className="admin-panel"><div className="admin-panel-heading"><div><h2>Obras ativas no mês</h2><p>Quantas obras correram em paralelo.</p></div></div><CountChart values={activeWorksByMonth} aria="Obras ativas por mês" suffix="obras" /></div>
         </section>

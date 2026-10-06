@@ -998,3 +998,8 @@ h1, h2, h3, p { margin-top: 0; }
 @media (max-width: 640px) { .viz-bar { width: 10px; } .viz-plot { height: 150px; } }
 /* Mês sem ocorrência não desenha barra — a lasquinha do min-height leria como "pouco" */
 .viz-bar.zero { min-height: 0; }
+/* 12 colunas: barras e espaçamento mais enxutos para caber sem apertar */
+.viz-plot, .viz-axis { gap: 6px; }
+.viz-bar { width: 12px; }
+.viz-axis small { font-size: 7.5px; }
+@media (max-width: 640px) { .viz-plot, .viz-axis { gap: 3px; } .viz-bar { width: 7px; } }
