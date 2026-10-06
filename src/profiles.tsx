@@ -22,13 +22,13 @@ const initialPeople: Person[] = [
   { id: 3, name: 'Rafael Costa', email: 'rafael@cymaco.eng.br', profile: 'Engenheiro', scope: '3 obras', status: 'Ativo' },
   { id: 4, name: 'Camila Nunes', email: 'camila@cymaco.eng.br', profile: 'Engenheiro', scope: '2 obras', status: 'Ativo' },
   { id: 5, name: 'Bruno Lima', email: 'bruno@cymaco.eng.br', profile: 'Engenheiro', scope: '1 obra', status: 'Ativo' },
-  { id: 6, name: 'Carlos Mendes', email: 'carlos.mendes@email.com', profile: 'Equipe de campo', scope: 'Residência Alto de Pinheiros', status: 'Ativo' },
+  { id: 6, name: 'Carlos Mendes', email: 'carlos.mendes@email.com', profile: 'Equipe de campo', scope: 'Ed. El Greco — Recuperação de fachada', status: 'Ativo' },
   { id: 7, name: 'João Martins', email: 'joao.martins@email.com', profile: 'Equipe de campo', scope: '3 obras', status: 'Ativo' },
-  { id: 8, name: 'Marcos Silva', email: 'marcos.silva@email.com', profile: 'Equipe de campo', scope: 'Residência Alto de Pinheiros', status: 'Inativo' },
-  { id: 9, name: 'Mariana Alves', email: 'mariana.alves@email.com', profile: 'Cliente', scope: 'Residência Alto de Pinheiros', status: 'Ativo' },
-  { id: 10, name: 'Sérgio Ramos', email: 'sindico@condominioaurora.com.br', profile: 'Cliente', scope: 'Retrofit Edifício Aurora', status: 'Ativo' },
-  { id: 11, name: 'Helena Duarte', email: 'helena@orbesaude.com.br', profile: 'Cliente', scope: 'Clínica Vila Madalena', status: 'Ativo' },
-  { id: 12, name: 'Luiza Andrade', email: 'luiza.andrade@email.com', profile: 'Cliente', scope: 'Casa Serra da Cantareira', status: 'Convite enviado' },
+  { id: 8, name: 'Marcos Silva', email: 'marcos.silva@email.com', profile: 'Equipe de campo', scope: 'Ed. El Greco — Recuperação de fachada', status: 'Inativo' },
+  { id: 9, name: 'Mariana Alves', email: 'mariana.alves@email.com', profile: 'Cliente', scope: 'Ed. El Greco — Recuperação de fachada', status: 'Ativo' },
+  { id: 10, name: 'Sérgio Ramos', email: 'sindico@condallure.com.br', profile: 'Cliente', scope: 'Ed. Allure — Impermeabilização', status: 'Ativo' },
+  { id: 11, name: 'Helena Duarte', email: 'helena@condmontecastelo.com.br', profile: 'Cliente', scope: 'Ed. Monte Castelo', status: 'Ativo' },
+  { id: 12, name: 'Luiza Andrade', email: 'luiza.andrade@email.com', profile: 'Cliente', scope: 'Sede administrativa', status: 'Convite enviado' },
 ]
 
 const MODULES = ['Dashboard da empresa', 'Obras e cronograma', 'Diário de obra', 'Chat da obra', 'Materiais e estoque', 'Medições', 'Financeiro e fluxo de caixa', 'Notas fiscais', 'CRM', 'Documentos', 'Perfis e acessos', 'Portal do cliente']
