@@ -687,3 +687,25 @@ h1, h2, h3, p { margin-top: 0; }
   .approvals-table .admin-table-head, .approvals-table article { min-width: 680px; }
   .documents-table .admin-table-head, .documents-table article { min-width: 680px; }
 }
+
+/* Admin — Fornecedores, Atualizações, CRM resumo */
+.fornecedores-table .admin-table-head, .fornecedores-table article { display: grid; grid-template-columns: 1.5fr .8fr .5fr .9fr 1.1fr .6fr; gap: 12px; align-items: center; }
+.fornecedores-table .admin-table-head { padding: 9px 16px; }
+.fornecedores-table article { min-height: 56px; padding: 10px 16px; border-top: 1px solid #edf0f5; }
+.fornecedores-table article > div strong { color: var(--navy); font-size: 9px; }
+.fornecedores-table article > span { color: #667188; font-size: 8.5px; }
+.fornecedores-table article > strong { color: var(--navy); font-size: 8.5px; }
+.forn-score { display: flex; align-items: center; gap: 7px; }
+.forn-score > span { flex: 1; min-width: 46px; height: 6px; border-radius: 4px; background: #eef1f6; overflow: hidden; }
+.forn-score i { display: block; height: 100%; background: linear-gradient(90deg, #2e77ff, #164cff); }
+.forn-score b { color: var(--navy); font-size: 8px; }
+.fornecedores-table article > em { justify-self: start; padding: 5px 8px; border-radius: 8px; font-size: 8px; font-weight: 750; font-style: normal; }
+.fornecedores-table article > em.ok { color: #167354; background: #e7f8f1; }
+.fornecedores-table article > em.warn { color: #a66a1c; background: #fff2de; }
+.fornecedores-table article > em.bad { color: #c0392b; background: #ffebe9; }
+.updates-feed { padding: 6px 12px; }
+.crm-summary { margin-bottom: 16px; }
+@media (max-width: 900px) {
+  .fornecedores-table { overflow-x: auto; }
+  .fornecedores-table .admin-table-head, .fornecedores-table article { min-width: 680px; }
+}
