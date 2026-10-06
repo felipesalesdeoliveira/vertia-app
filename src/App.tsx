@@ -15,6 +15,32 @@ type ViewMode = 'company' | 'client'
 type Page = 'dashboard' | 'projects' | 'finance' | 'cashflow' | 'crm' | 'inventory' | 'invoices' | 'administration' | 'documents' | 'updates' | 'approvals' | 'people' | 'settings' | 'fornecedores' | 'relatorios'
 type Role = 'admin' | 'engineer' | 'field' | 'client'
 
+const COMPANY_MODULES = [
+  { key: 'crm', label: 'CRM', desc: 'Funil comercial, leads e propostas' },
+  { key: 'finance', label: 'Financeiro', desc: 'Painel financeiro, fluxo de caixa e notas fiscais' },
+  { key: 'inventory', label: 'Estoque', desc: 'Materiais, saldos e movimentações' },
+  { key: 'fornecedores', label: 'Fornecedores', desc: 'Cadastro e desempenho de prestadores' },
+  { key: 'relatorios', label: 'Relatórios', desc: 'Relatórios consolidados e exportação' },
+  { key: 'documents', label: 'Documentos', desc: 'Biblioteca de arquivos da empresa' },
+  { key: 'approvals', label: 'Aprovações', desc: 'Decisões do cliente nas obras' },
+  { key: 'updates', label: 'Atualizações', desc: 'Feed de registros das obras' },
+]
+const MODULE_PAGES: Record<string, Page[]> = {
+  crm: ['crm'],
+  finance: ['finance', 'cashflow', 'invoices'],
+  inventory: ['inventory'],
+  fornecedores: ['fornecedores'],
+  relatorios: ['relatorios'],
+  documents: ['documents'],
+  approvals: ['approvals'],
+  updates: ['updates'],
+}
+type Modules = Record<string, boolean>
+const isPageEnabled = (page: Page, modules: Modules) => {
+  const key = Object.keys(MODULE_PAGES).find(moduleKey => MODULE_PAGES[moduleKey].includes(page))
+  return !key || modules[key] !== false
+}
+
 const navGroups = [
   { label: 'VISÃO GERAL', items: [
     { id: 'dashboard' as Page, label: 'Dashboard', icon: LayoutDashboard },
@@ -68,7 +94,7 @@ function StatusBadge({ status }: { status: Project['status'] }) {
   return <span className={`status status-${status.toLowerCase().replace(' ', '-')}`}><span />{status}</span>
 }
 
-function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, crmCount }: {
+function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, crmCount, modules }: {
   page: Page
   setPage: (page: Page) => void
   view: ViewMode
@@ -78,6 +104,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
   role: Role
   onLogout: () => void
   crmCount: number
+  modules: Modules
 }) {
   const profile = role === 'engineer'
     ? { initials: 'RC', name: 'Rafael Costa', label: 'Engenheiro' }
@@ -94,7 +121,7 @@ function Sidebar({ page, setPage, view, setView, open, onClose, role, onLogout, 
         <ChevronDown size={16} />
       </div>
       <nav className="main-nav">
-        {navGroups.map((group, index) => <div className="nav-group" key={group.label}><p className={`nav-label ${index ? 'nav-label-spaced' : ''}`}>{group.label}</p>{group.items.map(({ id, label, icon: Icon, count }) => <button key={id} className={page === id && view === 'company' ? 'active' : ''} onClick={() => { setPage(id); setView('company'); onClose() }}><Icon size={19} /><span>{label}</span>{count && <em>{id === 'crm' ? crmCount : count}</em>}</button>)}</div>)}
+        {navGroups.map((group, index) => { const items = group.items.filter(item => isPageEnabled(item.id, modules)); if (!items.length) return null; return <div className="nav-group" key={group.label}><p className={`nav-label ${index ? 'nav-label-spaced' : ''}`}>{group.label}</p>{items.map(({ id, label, icon: Icon, count }) => <button key={id} className={page === id && view === 'company' ? 'active' : ''} onClick={() => { setPage(id); setView('company'); onClose() }}><Icon size={19} /><span>{label}</span>{count && <em>{id === 'crm' ? crmCount : count}</em>}</button>)}</div> })}
         <p className="nav-label nav-label-spaced">CONTA</p>
         <button className={page === 'settings' ? 'active' : ''} onClick={() => { setPage('settings'); setView('company'); onClose() }}>
           <Settings size={19} /><span>Configurações</span>
@@ -230,7 +257,7 @@ function ProjectsPage({ onOpenProject, onMenu }: { onOpenProject: (project: Proj
   )
 }
 
-function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads }: { page: Page; updates: Update[]; onMenu: () => void; onNavigate: (page: Page) => void; leads: Lead[]; setLeads: Dispatch<SetStateAction<Lead[]>> }) {
+function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, modules, setModules }: { page: Page; updates: Update[]; onMenu: () => void; onNavigate: (page: Page) => void; leads: Lead[]; setLeads: Dispatch<SetStateAction<Lead[]>>; modules: Modules; setModules: Dispatch<SetStateAction<Modules>> }) {
   const [invoiceSaved, setInvoiceSaved] = useState(false)
   const [invoiceForm, setInvoiceForm] = useState({ number: '', supplier: '', project: projects[0].name, value: '' })
   const titles: Partial<Record<Page, { title: string; subtitle: string }>> = {
@@ -300,6 +327,7 @@ function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads }:
 
         {page === 'settings' && <>
           <section className="admin-settings-grid"><div className="admin-panel settings-panel"><div className="admin-panel-heading"><div><h2>Dados da empresa</h2><p>Usados em propostas e documentos.</p></div></div><div className="settings-fields"><label>Nome da empresa<input defaultValue="Horizonte Engenharia" /></label><label>CNPJ<input defaultValue="12.345.678/0001-90" /></label><label>Endereço<input defaultValue="Av. Paulista, 1000 — São Paulo/SP" /></label><label>Telefone<input defaultValue="(11) 4000-0000" /></label></div><button className="primary-button settings-save"><Check size={16} />Salvar dados</button></div><div className="admin-panel settings-panel"><div className="admin-panel-heading"><div><h2>Portal do cliente</h2><p>Personalize a área que o cliente acessa.</p></div></div><div className="settings-fields"><label>Subdomínio do portal<div className="settings-subdomain"><input defaultValue="horizonte" /><span>.vertia.app</span></div></label><label>Cor de destaque<div className="settings-color"><input type="color" defaultValue="#164cff" /><span>#164CFF</span></div></label><label className="settings-switch"><div><strong>Logo da empresa no portal</strong><small>Exibe a sua marca para o cliente</small></div><span className="switch on" /></label></div><button className="primary-button settings-save"><Check size={16} />Salvar portal</button></div></section>
+          <section className="admin-panel settings-panel-wide"><div className="admin-panel-heading"><div><h2>Módulos</h2><p>Escolha o que a sua empresa usa. O que for desligado some do menu.</p></div><span className="number-badge">{COMPANY_MODULES.filter(item => modules[item.key] !== false).length}/{COMPANY_MODULES.length}</span></div><div className="settings-modules">{COMPANY_MODULES.map(item => { const on = modules[item.key] !== false; return <div key={item.key}><div><strong>{item.label}</strong><small>{item.desc}</small></div><button type="button" className={`switch ${on ? 'on' : ''}`} onClick={() => setModules(current => ({ ...current, [item.key]: current[item.key] === false }))} aria-label={`${on ? 'Desativar' : 'Ativar'} ${item.label}`} /></div> })}</div><div className="settings-modules-note"><ShieldCheck size={16} /><span>Dashboard, Obras, Perfis e acessos, Painel administrativo e Configurações são fixos e não podem ser desligados.</span></div></section>
           <section className="admin-panel settings-panel-wide"><div className="admin-panel-heading"><div><h2>Notificações</h2><p>Escolha o que a empresa recebe e por onde.</p></div></div><div className="settings-notif">{([['Nova atualização de obra', true, true], ['Aprovação do cliente', true, true], ['Pedido de material', true, false], ['Nota fiscal sem vínculo', false, true], ['Pendência financeira', true, true]] as [string, boolean, boolean][]).map(row => <div key={row[0]}><strong>{row[0]}</strong><span className="settings-switch-inline"><i className={`switch ${row[1] ? 'on' : ''}`} />No app</span><span className="settings-switch-inline"><i className={`switch ${row[2] ? 'on' : ''}`} />E-mail</span></div>)}</div></section>
           <section className="admin-panel settings-panel-wide"><div className="admin-panel-heading"><div><h2>Integrações</h2><p>Conecte ferramentas externas.</p></div></div><div className="settings-integrations">{([['Google Calendar', 'Sincronize prazos e tarefas', 'Conectar'], ['WhatsApp', 'Receba registros e fotos do campo', 'Conectar'], ['Importar planilha', 'Traga contas a pagar/receber de outro sistema', 'Importar']] as [string, string, string][]).map(item => <article key={item[0]}><span className="settings-int-icon"><ArrowLeftRight size={18} /></span><div><strong>{item[0]}</strong><small>{item[1]}</small></div><button className="secondary-button">{item[2]}</button></article>)}</div></section>
         </>}
@@ -991,6 +1019,15 @@ export default function App() {
   const [leads, setLeads] = useState<Lead[]>(initialLeads)
   const [modal, setModal] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [modules, setModules] = useState<Modules>(() => {
+    try { const stored = window.localStorage.getItem('vertia-modules'); return stored ? JSON.parse(stored) as Modules : {} } catch { return {} }
+  })
+  useEffect(() => {
+    try { window.localStorage.setItem('vertia-modules', JSON.stringify(modules)) } catch { /* armazenamento indisponível */ }
+  }, [modules])
+  useEffect(() => {
+    if (!isPageEnabled(page, modules)) setPage('dashboard')
+  }, [page, modules])
   const currentProject = useMemo(() => selectedProject ?? projects[0], [selectedProject])
 
   const openProject = (project: Project) => { setSelectedProject(project); setView('company') }
@@ -1005,13 +1042,13 @@ export default function App() {
 
   return (
     <div className={`app-shell ${menuOpen ? 'menu-open' : ''}`}>
-      <Sidebar page={page} setPage={(next) => { setPage(next); setSelectedProject(null) }} view={view} setView={setView} open={menuOpen} onClose={() => setMenuOpen(false)} role={role} onLogout={logout} crmCount={leads.filter(isOpenLead).length} />
+      <Sidebar page={page} setPage={(next) => { setPage(next); setSelectedProject(null) }} view={view} setView={setView} open={menuOpen} onClose={() => setMenuOpen(false)} role={role} onLogout={logout} crmCount={leads.filter(isOpenLead).length} modules={modules} />
       {menuOpen && <button className="sidebar-overlay" onClick={() => setMenuOpen(false)} aria-label="Fechar menu" />}
       <div className="main-shell">
         {selectedProject ? <ProjectDetail project={selectedProject} updates={updates} onBack={() => setSelectedProject(null)} onClient={() => setView('client')} onNewUpdate={() => setModal(true)} /> :
           page === 'dashboard' ? <Dashboard updates={updates} onOpenProject={openProject} onNewUpdate={() => setModal(true)} onMenu={() => setMenuOpen(true)} onNavigate={setPage} /> :
             page === 'projects' ? <ProjectsPage onOpenProject={openProject} onMenu={() => setMenuOpen(true)} /> :
-              (['finance', 'cashflow', 'crm', 'inventory', 'invoices', 'administration', 'people', 'documents', 'updates', 'approvals', 'settings', 'fornecedores', 'relatorios'] as Page[]).includes(page) ? <AdminModulePage page={page} updates={updates} onMenu={() => setMenuOpen(true)} onNavigate={setPage} leads={leads} setLeads={setLeads} /> : <GenericPage page={page} updates={updates} onMenu={() => setMenuOpen(true)} />}
+              (['finance', 'cashflow', 'crm', 'inventory', 'invoices', 'administration', 'people', 'documents', 'updates', 'approvals', 'settings', 'fornecedores', 'relatorios'] as Page[]).includes(page) ? <AdminModulePage page={page} updates={updates} onMenu={() => setMenuOpen(true)} onNavigate={setPage} leads={leads} setLeads={setLeads} modules={modules} setModules={setModules} /> : <GenericPage page={page} updates={updates} onMenu={() => setMenuOpen(true)} />}
       </div>
       {modal && <NewUpdateModal onClose={() => setModal(false)} onSave={saveUpdate} />}
     </div>

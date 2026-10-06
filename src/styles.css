@@ -726,3 +726,12 @@ h1, h2, h3, p { margin-top: 0; }
   .client-menu-button { display: inline-grid; }
   .client-sidebar-close { display: inline-grid; }
 }
+
+/* Admin — módulos habilitáveis por empresa */
+.settings-modules > div { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid #edf0f5; }
+.settings-modules > div:last-child { border-bottom: 0; }
+.settings-modules strong { display: block; color: var(--navy); font-size: 11px; }
+.settings-modules small { display: block; color: #8d95a7; font-size: 9px; margin-top: 3px; }
+.switch { border: 0; padding: 0; cursor: pointer; }
+.settings-modules-note { margin-top: 12px; padding: 11px; border-radius: 10px; display: flex; align-items: flex-start; gap: 9px; color: #5c6680; background: #f5f7fb; font-size: 9px; line-height: 1.5; }
+.settings-modules-note > svg { flex: 0 0 auto; color: var(--blue); }
