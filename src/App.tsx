@@ -452,6 +452,8 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
   const aliveRef = useRef(true)
   const messagesRef = useRef<HTMLDivElement | null>(null)
   const photoInputRef = useRef<HTMLInputElement | null>(null)
+  const materialPhotoInputRef = useRef<HTMLInputElement | null>(null)
+  const [materialPhoto, setMaterialPhoto] = useState<string | null>(null)
   const [messages, setMessages] = useState<Record<ChatRoom, ChatMessage[]>>({
     engineer: [
       { id: 1, author: 'Rafael Costa', text: 'Bom dia, João. Consegue conferir a chegada dos blocos?', time: '08:12', mine: false },
@@ -465,7 +467,7 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
       { id: 4, author: 'Carlos · Mestre de obras', audio: { seconds: 9 }, time: '07:30', mine: false },
     ],
   })
-  const [requests, setRequests] = useState([
+  const [requests, setRequests] = useState<{ id: number; item: string; quantity: string; status: string; date: string; photo?: string }[]>([
     { id: 1, item: 'Argamassa AC-II', quantity: '12 sacos', status: 'A caminho', date: 'Hoje, 09:10' },
     { id: 2, item: 'Disco de corte 110 mm', quantity: '3 unidades', status: 'Comprado', date: 'Ontem, 15:42' },
     { id: 3, item: 'Cimento CP-II', quantity: '20 sacos', status: 'Em cotação', date: 'Ontem, 11:03' },
@@ -548,8 +550,15 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
       quantity: `${quantity.trim()} ${unit}`,
       status: urgent ? 'Urgente' : 'Enviado',
       date: 'Agora',
+      photo: materialPhoto ?? undefined,
     }, ...current])
-    setMaterial(''); setQuantity(''); setDetails(''); setUrgent(false); setRequestSent(true)
+    setMaterial(''); setQuantity(''); setDetails(''); setUrgent(false); setMaterialPhoto(null); setRequestSent(true)
+  }
+  const pickMaterialPhoto = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) setMaterialPhoto(URL.createObjectURL(file))
+    event.target.value = ''
+    setRequestSent(false)
   }
   const sendPhoto = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -618,8 +627,8 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
 
         {view === 'materials' && <section className="field-screen">
           <div className="field-screen-title"><div><span>MATERIAIS</span><h1>Solicitar material</h1><p>Envie o pedido diretamente para o responsável pela obra.</p></div></div>
-          <form className="material-form" onSubmit={requestMaterial}><label>Material ou equipamento<input value={material} onChange={event => { setMaterial(event.target.value); setRequestSent(false) }} placeholder="Ex.: Argamassa AC-II" required /></label><div className="material-form-row"><label>Quantidade<input value={quantity} onChange={event => setQuantity(event.target.value)} placeholder="Ex.: 10" required /></label><label>Unidade<select value={unit} onChange={event => setUnit(event.target.value)}><option>unidades</option><option>sacos</option><option>metros</option><option>caixas</option><option>litros</option><option>kg</option></select></label></div><label>Observação<textarea value={details} onChange={event => setDetails(event.target.value)} placeholder="Informe marca, medida ou onde será utilizado." /></label><label className="urgent-check"><input type="checkbox" checked={urgent} onChange={event => setUrgent(event.target.checked)} /><span><strong>Pedido urgente</strong><small>Marque somente se o trabalho estiver impedido.</small></span></label>{requestSent && <div className="request-success"><CheckCircle2 size={18} />Solicitação enviada para o responsável da obra.</div>}<button className="primary-button material-submit" type="submit">Enviar solicitação <ChevronRight size={17} /></button></form>
-          <div className="field-section-heading material-heading"><h2>Meus pedidos</h2><span>{requests.length} solicitações</span></div><div className="material-requests">{requests.map(request => <div key={request.id}><span className="request-icon"><ClipboardCheck size={19} /></span><div><strong>{request.item}</strong><small>{request.quantity} · {request.date}</small></div><span className={`request-status ${request.status.toLowerCase().replace(' ', '-')}`}>{request.status}</span><div className="request-actions">{(request.status === 'A caminho' || request.status === 'Entregue') && <button type="button" className="request-confirm" onClick={() => confirmReceipt(request.id)}><Check size={13} />Confirmar recebimento</button>}{request.status === 'Recebido' && <span className="request-received"><CheckCircle2 size={13} />Recebido</span>}<button type="button" className="request-repeat" onClick={() => repeatRequest(request)}><ArrowLeftRight size={13} />Repetir</button></div></div>)}</div>
+          <form className="material-form" onSubmit={requestMaterial}><label>Material ou equipamento<input value={material} onChange={event => { setMaterial(event.target.value); setRequestSent(false) }} placeholder="Ex.: Argamassa AC-II" required /></label><div className="material-form-row"><label>Quantidade<input value={quantity} onChange={event => setQuantity(event.target.value)} placeholder="Ex.: 10" required /></label><label>Unidade<select value={unit} onChange={event => setUnit(event.target.value)}><option>unidades</option><option>sacos</option><option>metros</option><option>caixas</option><option>litros</option><option>kg</option></select></label></div><label>Observação<textarea value={details} onChange={event => setDetails(event.target.value)} placeholder="Informe marca, medida ou onde será utilizado." /></label><div className="material-photo">{materialPhoto ? <div className="material-photo-preview"><img src={materialPhoto} alt="Foto do material" /><button type="button" onClick={() => setMaterialPhoto(null)} aria-label="Remover foto"><X size={14} /></button></div> : <button type="button" className="material-photo-add" onClick={() => materialPhotoInputRef.current?.click()}><Camera size={16} />Anexar foto</button>}<input ref={materialPhotoInputRef} type="file" accept="image/*" capture="environment" hidden onChange={pickMaterialPhoto} /></div><label className="urgent-check"><input type="checkbox" checked={urgent} onChange={event => setUrgent(event.target.checked)} /><span><strong>Pedido urgente</strong><small>Marque somente se o trabalho estiver impedido.</small></span></label>{requestSent && <div className="request-success"><CheckCircle2 size={18} />Solicitação enviada para o responsável da obra.</div>}<button className="primary-button material-submit" type="submit">Enviar solicitação <ChevronRight size={17} /></button></form>
+          <div className="field-section-heading material-heading"><h2>Meus pedidos</h2><span>{requests.length} solicitações</span></div><div className="material-requests">{requests.map(request => <div key={request.id}><span className="request-icon">{request.photo ? <img className="request-thumb" src={request.photo} alt="" /> : <ClipboardCheck size={19} />}</span><div><strong>{request.item}</strong><small>{request.quantity} · {request.date}</small></div><span className={`request-status ${request.status.toLowerCase().replace(' ', '-')}`}>{request.status}</span><div className="request-actions">{(request.status === 'A caminho' || request.status === 'Entregue') && <button type="button" className="request-confirm" onClick={() => confirmReceipt(request.id)}><Check size={13} />Confirmar recebimento</button>}{request.status === 'Recebido' && <span className="request-received"><CheckCircle2 size={13} />Recebido</span>}<button type="button" className="request-repeat" onClick={() => repeatRequest(request)}><ArrowLeftRight size={13} />Repetir</button></div></div>)}</div>
         </section>}
 
         {view === 'measurement' && <section className="field-screen">
