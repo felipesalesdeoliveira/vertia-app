@@ -636,7 +636,8 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
   type ChatRoom = 'engineer' | 'site'
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null)
   const [view, setView] = useState<FieldView>('messages')
-  const [chatRoom, setChatRoom] = useState<ChatRoom>('engineer')
+  // O chat abre no grupo da obra; a conversa com o engenheiro é a segunda opção.
+  const [chatRoom, setChatRoom] = useState<ChatRoom>('site')
   const [message, setMessage] = useState('')
   const [material, setMaterial] = useState('')
   const [quantity, setQuantity] = useState('')
@@ -646,7 +647,7 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
   const [requestSent, setRequestSent] = useState(false)
   const [recording, setRecording] = useState(false)
   const [recordSeconds, setRecordSeconds] = useState(0)
-  const [unreadSite, setUnreadSite] = useState(3)
+  const [unreadSite, setUnreadSite] = useState(0)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const recordTimerRef = useRef<number | undefined>(undefined)
   const startingRef = useRef(false)
@@ -786,8 +787,8 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
   const chooseProject = (projectId: number) => {
     setSelectedProjectId(projectId)
     setView('messages')
-    setChatRoom('engineer')
-    setUnreadSite(3)
+    setChatRoom('site')
+    setUnreadSite(0)
     setRequestSent(false)
   }
 
@@ -808,8 +809,8 @@ function FieldPortal({ assignedProjects, onLogout }: { assignedProjects: Project
       <main className="fm-main">
         {view === 'messages' && <section className="fm-chat">
           <div className="fm-rooms">
-            <button className={chatRoom === 'engineer' ? 'active' : ''} onClick={() => selectRoom('engineer')}><span className="fm-room-avatar">{managerInitials}</span><div><strong>Engenheiro</strong><small>{project.manager}</small></div></button>
             <button className={chatRoom === 'site' ? 'active' : ''} onClick={() => selectRoom('site')}><span className="fm-room-avatar group"><Users size={19} /></span><div><strong>Grupo da obra</strong><small>12 pessoas</small></div>{unreadSite > 0 && <em className="fm-unread">{unreadSite}</em>}</button>
+            <button className={chatRoom === 'engineer' ? 'active' : ''} onClick={() => selectRoom('engineer')}><span className="fm-room-avatar">{managerInitials}</span><div><strong>Engenheiro</strong><small>{project.manager}</small></div></button>
           </div>
           <div className="fm-messages" ref={messagesRef}><span className="fm-day">HOJE</span>{messages[chatRoom].map(item => <div key={item.id} className={`fm-bubble ${item.mine ? 'mine' : ''}`}>{chatRoom === 'site' && !item.mine && <strong>{item.author}</strong>}{item.audio ? <AudioMessage seconds={item.audio.seconds} url={item.audio.url} /> : item.photo ? <img className="fm-photo" src={item.photo} alt="Foto enviada" /> : <p>{item.text}</p>}<small>{item.time}</small></div>)}</div>
           {recording ? <div className="fm-compose">
