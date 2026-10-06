@@ -974,3 +974,24 @@ h1, h2, h3, p { margin-top: 0; }
   .topbar-actions { gap: 8px; }
   .menu-button { width: 38px; height: 38px; }
 }
+
+/* Dashboard — gráficos (paleta validada: azul #164cff x laranja #e07b39) */
+.dashboard-charts { display: grid; grid-template-columns: 1.5fr .8fr; gap: 16px; }
+.viz-legend { display: flex; gap: 16px; margin-bottom: 12px; }
+.viz-legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 9px; font-weight: 650; }
+.viz-legend i { width: 9px; height: 9px; border-radius: 3px; }
+.viz-legend i.revenue { background: #164cff; }
+.viz-legend i.cost { background: #e07b39; }
+.viz-plot { height: 178px; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; align-items: end; border-bottom: 1px solid var(--line); background: repeating-linear-gradient(to bottom, transparent 0 34px, #eef1f6 34px 35px); }
+.viz-group { height: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; }
+.viz-mark { position: relative; height: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.viz-bar { display: block; width: 14px; min-height: 3px; border-radius: 4px 4px 0 0; }
+.viz-bar.works, .viz-bar.revenue { background: #164cff; }
+.viz-bar.cost { background: #e07b39; }
+.viz-peak { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); white-space: nowrap; color: var(--navy); font-size: 9px; font-weight: 750; }
+.viz-tip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); white-space: nowrap; padding: 6px 9px; border-radius: 7px; background: var(--navy); color: white; font-style: normal; font-size: 8px; font-weight: 650; opacity: 0; pointer-events: none; transition: opacity .12s; z-index: 6; }
+.viz-mark:hover .viz-tip { opacity: 1; }
+.viz-axis { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; margin-top: 8px; }
+.viz-axis small { text-align: center; color: #8d95a7; font-size: 8px; }
+@media (max-width: 900px) { .dashboard-charts { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .viz-bar { width: 10px; } .viz-plot { height: 150px; } }
