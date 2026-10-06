@@ -1023,3 +1023,22 @@ h1, h2, h3, p { margin-top: 0; }
 .receivables-table article > em.warn { color: #a66a1c; background: #fff2de; }
 .receivables-table article > em.future { color: #5c6680; background: #eef1f6; }
 @media (max-width: 900px) { .receivables-table { overflow-x: auto; } .receivables-table .admin-table-head, .receivables-table article { min-width: 760px; } }
+
+/* Financeiro — a receber e a pagar lado a lado, mesmo formato */
+.finance-ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.ledger-total { font-size: 15px; }
+.ledger-total.in { color: #167354; }
+.ledger-total.out { color: #c0392b; }
+.ledger-table .admin-table-head, .ledger-table article { display: grid; grid-template-columns: 1.7fr .8fr .8fr .7fr; gap: 10px; align-items: center; }
+.ledger-table .admin-table-head { padding: 9px 16px; }
+.ledger-table article { min-height: 54px; padding: 10px 16px; border-top: 1px solid #edf0f5; }
+.ledger-table article > div strong { display: block; color: var(--navy); font-size: 9px; }
+.ledger-table article > div small { display: block; color: #8d95a7; font-size: 7.5px; margin-top: 3px; }
+.ledger-table article > span { color: #667188; font-size: 8.5px; }
+.ledger-table article > span.bad { color: #c0392b; font-weight: 750; }
+.ledger-table article > strong { color: var(--navy); font-size: 8.5px; }
+.ledger-table article > em { justify-self: start; padding: 5px 7px; border-radius: 8px; font-size: 7px; font-style: normal; font-weight: 750; }
+.ledger-table article > em.bad { color: #c0392b; background: #ffebe9; }
+.ledger-table article > em.warn { color: #a66a1c; background: #fff2de; }
+.ledger-table article > em.future { color: #5c6680; background: #eef1f6; }
+@media (max-width: 900px) { .finance-ledger { grid-template-columns: 1fr; } }

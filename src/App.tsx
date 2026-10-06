@@ -432,6 +432,34 @@ const budgetList = [
   { id: 'ORC-0157', name: 'Sede administrativa', client: 'Cymaco Engenharia', value: 74200, date: '01/10/2026', status: 'Reprovado' },
 ]
 
+type LedgerRow = { name: string; detail: string; due: string; value: number; status: string }
+const receivables: LedgerRow[] = [
+  { name: 'Cond. Allure', detail: 'Ed. Allure · parcela 2 de 6', due: '05/10/2026', value: 35400, status: 'Vencido' },
+  { name: 'Cond. Ed. El Greco', detail: 'Ed. El Greco · parcela 4 de 8', due: '10/10/2026', value: 49200, status: 'A vencer' },
+  { name: 'Cond. Monte Castelo', detail: 'Ed. Monte Castelo · parcela 5 de 6', due: '18/10/2026', value: 28150, status: 'A vencer' },
+  { name: 'Cond. Ed. El Greco', detail: 'Ed. El Greco · parcela 5 de 8', due: '10/11/2026', value: 49200, status: 'Futura' },
+]
+const payables: LedgerRow[] = [
+  { name: 'Impermeabiliza SC', detail: 'Ed. Allure · materiais', due: '28/09/2026', value: 12300, status: 'Vencido' },
+  { name: 'Argamassas Catarinense', detail: 'Ed. El Greco · materiais', due: '02/10/2026', value: 18450, status: 'A vencer' },
+  { name: 'Folha de prestadores', detail: '3 obras vinculadas', due: '05/10/2026', value: 42800, status: 'A vencer' },
+  { name: 'Pinturas Litoral', detail: 'Ed. Monte Castelo · mão de obra', due: '08/10/2026', value: 9720, status: 'A vencer' },
+]
+
+function LedgerTable({ rows }: { rows: LedgerRow[] }) {
+  return (
+    <div className="ledger-table">
+      <div className="admin-table-head"><span>DESCRIÇÃO</span><span>VENCIMENTO</span><span>VALOR</span><span>SITUAÇÃO</span></div>
+      {rows.map(row => <article key={`${row.name}-${row.due}`}>
+        <div><strong>{row.name}</strong><small>{row.detail}</small></div>
+        <span className={row.status === 'Vencido' ? 'bad' : ''}>{row.due}</span>
+        <strong>{formatMoney(row.value)}</strong>
+        <em className={row.status === 'Vencido' ? 'bad' : row.status === 'A vencer' ? 'warn' : 'future'}>{row.status}</em>
+      </article>)}
+    </div>
+  )
+}
+
 function BudgetSheet({ bdi }: { bdi: number }) {
   const [hidden, setHidden] = useState<Record<string, boolean>>({ 'Instalação do canteiro e isolamento da área': true, 'Montagem de balancins e linha de vida': true })
   const isVisible = (name: string) => !hidden[name]
@@ -495,11 +523,13 @@ function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, m
         {page === 'finance' && <>
           <FinanceOverview />
           <div className="viz-section-heading"><h2>Posição atual</h2><p>Obras em andamento e compromissos de outubro de 2026.</p></div>
-          <div className="viz-section-heading"><h2>Contas a receber</h2><p>O que os clientes ainda devem, por obra.</p></div>
-          <section className="admin-summary-grid receivables-summary"><article><span className="admin-summary-icon revenue"><TrendingUp size={20} /></span><div><small>A RECEBER</small><strong>{formatMoney(184000)}</strong><p>8 parcelas em aberto</p></div></article><article><span className="admin-summary-icon expense"><Clock3 size={20} /></span><div><small>VENCIDO</small><strong>{formatMoney(35400)}</strong><p>1 parcela · Ed. Allure</p></div></article><article><span className="admin-summary-icon result"><CheckCircle2 size={20} /></span><div><small>RECEBIDO NO MÊS</small><strong>{formatMoney(96000)}</strong><p>2 parcelas quitadas</p></div></article></section>
-          <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Próximos recebimentos</h2><p>Parcelas de contrato por obra.</p></div><button>Exportar</button></div><div className="receivables-table"><div className="admin-table-head"><span>CLIENTE</span><span>OBRA</span><span>PARCELA</span><span>VENCIMENTO</span><span>VALOR</span><span>SITUAÇÃO</span></div>{[{ client: 'Cond. Allure', obra: 'Ed. Allure', parcel: '2 de 6', due: '05/10/2026', value: 35400, status: 'Vencido' }, { client: 'Cond. Ed. El Greco', obra: 'Ed. El Greco', parcel: '4 de 8', due: '10/10/2026', value: 49200, status: 'A vencer' }, { client: 'Cond. Monte Castelo', obra: 'Ed. Monte Castelo', parcel: '5 de 6', due: '18/10/2026', value: 28150, status: 'A vencer' }, { client: 'Cond. Ed. El Greco', obra: 'Ed. El Greco', parcel: '5 de 8', due: '10/11/2026', value: 49200, status: 'Futura' }, { client: 'Cond. Allure', obra: 'Ed. Allure', parcel: '3 de 6', due: '05/11/2026', value: 35400, status: 'Futura' }].map(row => <article key={`${row.obra}-${row.parcel}`}><div><strong>{row.client}</strong></div><span>{row.obra}</span><span>{row.parcel}</span><span className={row.status === 'Vencido' ? 'bad' : ''}>{row.due}</span><strong>{formatMoney(row.value)}</strong><em className={row.status === 'Vencido' ? 'bad' : row.status === 'A vencer' ? 'warn' : 'future'}>{row.status}</em></article>)}</div></section>
+          <div className="viz-section-heading"><h2>Contas a receber e a pagar</h2><p>Os dois lados do caixa, no mesmo recorte.</p></div>
+          <section className="finance-ledger">
+            <div className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Contas a receber</h2><p>Parcelas de contrato dos clientes.</p></div><strong className="ledger-total in">{formatMoney(161950)}</strong></div><LedgerTable rows={receivables} /></div>
+            <div className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Contas a pagar</h2><p>Compromissos com fornecedores e equipe.</p></div><strong className="ledger-total out">{formatMoney(83270)}</strong></div><LedgerTable rows={payables} /></div>
+          </section>
 
-          <section className="admin-two-columns finance-current"><section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Resultado por obra</h2><p>Receita, custo e margem projetada.</p></div><button>Exportar relatório</button></div><div className="finance-project-table"><div className="admin-table-head"><span>OBRA</span><span>CONTRATO</span><span>REALIZADO</span><span>MARGEM</span><span>STATUS</span></div>{projects.map(project => <article key={project.id}><div><strong>{project.name}</strong><small>{project.client}</small></div><span>R$ {project.id === 1 ? '320.000' : project.id === 2 ? '278.000' : project.id === 3 ? '210.000' : '140.000'}</span><span>R$ {project.id === 1 ? '188.400' : project.id === 2 ? '195.700' : project.id === 3 ? '156.200' : '72.150'}</span><strong>{project.id === 2 ? '29,6%' : '35,8%'}</strong><StatusBadge status={project.status} /></article>)}</div></section><aside className="admin-panel"><div className="admin-panel-heading"><div><h2>Contas a pagar</h2><p>Próximos compromissos com fornecedores.</p></div><span className="number-badge">4</span></div><div className="due-list"><div><span>02 OUT</span><p><strong>Argamassas Catarinense</strong><small>Ed. El Greco</small></p><b>R$ 18.450</b></div><div><span>05 OUT</span><p><strong>Folha de prestadores</strong><small>3 obras vinculadas</small></p><b>R$ 42.800</b></div><div><span>08 OUT</span><p><strong>Pinturas Litoral</strong><small>Ed. Monte Castelo</small></p><b>R$ 9.720</b></div></div></aside></section>
+          <section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Resultado por obra</h2><p>Receita, custo e margem projetada.</p></div><button>Exportar relatório</button></div><div className="finance-project-table"><div className="admin-table-head"><span>OBRA</span><span>CONTRATO</span><span>REALIZADO</span><span>MARGEM</span><span>STATUS</span></div>{projects.map(project => <article key={project.id}><div><strong>{project.name}</strong><small>{project.client}</small></div><span>R$ {project.id === 1 ? '320.000' : project.id === 2 ? '278.000' : project.id === 3 ? '210.000' : '140.000'}</span><span>R$ {project.id === 1 ? '188.400' : project.id === 2 ? '195.700' : project.id === 3 ? '156.200' : '72.150'}</span><strong>{project.id === 2 ? '29,6%' : '35,8%'}</strong><StatusBadge status={project.status} /></article>)}</div></section>
         </>}
 
         {page === 'cashflow' && <CashFlow />}
