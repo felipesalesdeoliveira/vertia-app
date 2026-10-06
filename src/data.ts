@@ -24,7 +24,7 @@ export type Update = {
 export const projects: Project[] = [
   {
     id: 1,
-    name: 'Ed. El Greco — Recuperação de fachada',
+    name: 'Ed. El Greco',
     client: 'Condomínio Ed. El Greco',
     manager: 'Leonardo Alves',
     status: 'Em andamento',
@@ -36,7 +36,7 @@ export const projects: Project[] = [
   },
   {
     id: 2,
-    name: 'Ed. Allure — Impermeabilização',
+    name: 'Ed. Allure',
     client: 'Condomínio Allure',
     manager: 'Taine Garcia',
     status: 'Atenção',
@@ -48,7 +48,7 @@ export const projects: Project[] = [
   },
   {
     id: 3,
-    name: 'Ed. Monte Castelo — Pintura predial',
+    name: 'Ed. Monte Castelo',
     client: 'Condomínio Monte Castelo',
     manager: 'Leonardo Alves',
     status: 'Em andamento',
@@ -60,7 +60,7 @@ export const projects: Project[] = [
   },
   {
     id: 4,
-    name: 'Sede administrativa — Reforma interna',
+    name: 'Sede administrativa',
     client: 'Cymaco Engenharia',
     manager: 'Leonardo Alves',
     status: 'Planejada',

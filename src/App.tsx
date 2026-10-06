@@ -331,12 +331,12 @@ const budgetDirectCost = budgetSheet.reduce((sum, stage) => sum + stageTotal(sta
 const budgetArea = 2400
 const money2 = (value: number) => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 const budgetList = [
-  { id: 'ORC-0128', name: 'Ed. El Greco — Recuperação de fachada', client: 'Cond. Ed. El Greco', value: 393700, date: '12/05/2026', status: 'Aprovado' },
-  { id: 'ORC-0131', name: 'Ed. Allure — Impermeabilização', client: 'Cond. Allure', value: 212400, date: '02/06/2026', status: 'Aprovado' },
-  { id: 'ORC-0140', name: 'Ed. Monte Castelo — Pintura predial', client: 'Cond. Monte Castelo', value: 168900, date: '18/07/2026', status: 'Aprovado' },
-  { id: 'ORC-0152', name: 'Ed. Ilha Bela — Recuperação de marquises', client: 'Cond. Ilha Bela', value: 96300, date: '03/09/2026', status: 'Enviado' },
-  { id: 'ORC-0155', name: 'Ed. Portal da Lagoa — Retrofit de fachada', client: 'Cond. Portal da Lagoa', value: 287500, date: '25/09/2026', status: 'Rascunho' },
-  { id: 'ORC-0157', name: 'Sede administrativa — Reforma interna', client: 'Cymaco Engenharia', value: 74200, date: '01/10/2026', status: 'Reprovado' },
+  { id: 'ORC-0128', name: 'Ed. El Greco', client: 'Cond. Ed. El Greco', value: 393700, date: '12/05/2026', status: 'Aprovado' },
+  { id: 'ORC-0131', name: 'Ed. Allure', client: 'Cond. Allure', value: 212400, date: '02/06/2026', status: 'Aprovado' },
+  { id: 'ORC-0140', name: 'Ed. Monte Castelo', client: 'Cond. Monte Castelo', value: 168900, date: '18/07/2026', status: 'Aprovado' },
+  { id: 'ORC-0152', name: 'Ed. Ilha Bela', client: 'Cond. Ilha Bela', value: 96300, date: '03/09/2026', status: 'Enviado' },
+  { id: 'ORC-0155', name: 'Ed. Portal da Lagoa', client: 'Cond. Portal da Lagoa', value: 287500, date: '25/09/2026', status: 'Rascunho' },
+  { id: 'ORC-0157', name: 'Sede administrativa', client: 'Cymaco Engenharia', value: 74200, date: '01/10/2026', status: 'Reprovado' },
 ]
 
 function BudgetSheet({ bdi }: { bdi: number }) {
@@ -402,7 +402,7 @@ function AdminModulePage({ page, updates, onMenu, onNavigate, leads, setLeads, m
         {page === 'finance' && <>
           <FinanceOverview />
           <div className="viz-section-heading"><h2>Posição atual</h2><p>Obras em andamento e compromissos de outubro de 2026.</p></div>
-          <section className="admin-two-columns finance-current"><section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Resultado por obra</h2><p>Receita, custo e margem projetada.</p></div><button>Exportar relatório</button></div><div className="finance-project-table"><div className="admin-table-head"><span>OBRA</span><span>CONTRATO</span><span>REALIZADO</span><span>MARGEM</span><span>STATUS</span></div>{projects.map(project => <article key={project.id}><div><strong>{project.name}</strong><small>{project.client}</small></div><span>R$ {project.id === 1 ? '320.000' : project.id === 2 ? '278.000' : project.id === 3 ? '210.000' : '140.000'}</span><span>R$ {project.id === 1 ? '188.400' : project.id === 2 ? '195.700' : project.id === 3 ? '156.200' : '72.150'}</span><strong>{project.id === 2 ? '29,6%' : '35,8%'}</strong><StatusBadge status={project.status} /></article>)}</div></section><aside className="admin-panel"><div className="admin-panel-heading"><div><h2>Contas a vencer</h2><p>Próximos compromissos.</p></div><span className="number-badge">4</span></div><div className="due-list"><div><span>02 OUT</span><p><strong>Argamassas Catarinense</strong><small>Ed. El Greco — Recuperação de fachada</small></p><b>R$ 18.450</b></div><div><span>05 OUT</span><p><strong>Folha de prestadores</strong><small>3 obras vinculadas</small></p><b>R$ 42.800</b></div><div><span>08 OUT</span><p><strong>Pinturas Litoral</strong><small>Ed. Monte Castelo</small></p><b>R$ 9.720</b></div></div></aside></section>
+          <section className="admin-two-columns finance-current"><section className="admin-table-panel"><div className="admin-panel-heading"><div><h2>Resultado por obra</h2><p>Receita, custo e margem projetada.</p></div><button>Exportar relatório</button></div><div className="finance-project-table"><div className="admin-table-head"><span>OBRA</span><span>CONTRATO</span><span>REALIZADO</span><span>MARGEM</span><span>STATUS</span></div>{projects.map(project => <article key={project.id}><div><strong>{project.name}</strong><small>{project.client}</small></div><span>R$ {project.id === 1 ? '320.000' : project.id === 2 ? '278.000' : project.id === 3 ? '210.000' : '140.000'}</span><span>R$ {project.id === 1 ? '188.400' : project.id === 2 ? '195.700' : project.id === 3 ? '156.200' : '72.150'}</span><strong>{project.id === 2 ? '29,6%' : '35,8%'}</strong><StatusBadge status={project.status} /></article>)}</div></section><aside className="admin-panel"><div className="admin-panel-heading"><div><h2>Contas a vencer</h2><p>Próximos compromissos.</p></div><span className="number-badge">4</span></div><div className="due-list"><div><span>02 OUT</span><p><strong>Argamassas Catarinense</strong><small>Ed. El Greco</small></p><b>R$ 18.450</b></div><div><span>05 OUT</span><p><strong>Folha de prestadores</strong><small>3 obras vinculadas</small></p><b>R$ 42.800</b></div><div><span>08 OUT</span><p><strong>Pinturas Litoral</strong><small>Ed. Monte Castelo</small></p><b>R$ 9.720</b></div></div></aside></section>
         </>}
 
         {page === 'cashflow' && <CashFlow />}
