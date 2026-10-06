@@ -917,19 +917,33 @@ function EngineerPortal({ assignedProjects, onLogout }: { assignedProjects: Proj
     { id: 3, type: 'Relatório', title: 'Relatório fotográfico de setembro', status: 'pending' },
   ])
   const project = assignedProjects.find(item => item.id === selectedProjectId) ?? assignedProjects[0]
-  const navItems: Array<{ id: EngineerSection; label: string; icon: typeof Home }> = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'review', label: 'Revisar', icon: Sparkles },
-    { id: 'chat', label: 'Chat da equipe', icon: MessageCircle },
-    { id: 'tasks', label: 'Tarefas', icon: Check },
-    { id: 'schedule', label: 'Cronograma', icon: CalendarDays },
-    { id: 'budget', label: 'Orçamento', icon: TrendingUp },
-    { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
-    { id: 'measurements', label: 'Medições', icon: FileText },
-    { id: 'materials', label: 'Materiais', icon: FolderOpen },
-    { id: 'occurrences', label: 'Ocorrências', icon: Bell },
-    { id: 'documents', label: 'Documentos', icon: FolderOpen },
-    { id: 'diary', label: 'Diário de obra', icon: FileText },
+  const pendingReview = reviewItems.filter(item => item.status === 'pending').length
+  const openTasks = tasks.filter(task => task.status !== 'Concluída').length
+  const openOccurrences = occurrences.filter(item => item.status !== 'Resolvida').length
+  const pendingRequests = materialRequests.filter(request => request.status === 'Pendente').length
+  const navGroups: Array<{ label: string; items: Array<{ id: EngineerSection; label: string; icon: typeof Home; count?: number }> }> = [
+    { label: 'VISÃO GERAL', items: [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { id: 'review', label: 'Revisar', icon: Sparkles, count: pendingReview },
+    ] },
+    { label: 'DIA A DIA', items: [
+      { id: 'diary', label: 'Diário de obra', icon: FileText },
+      { id: 'tasks', label: 'Tarefas', icon: Check, count: openTasks },
+      { id: 'occurrences', label: 'Ocorrências', icon: Bell, count: openOccurrences },
+      { id: 'chat', label: 'Chat da equipe', icon: MessageCircle },
+    ] },
+    { label: 'QUALIDADE E PRAZO', items: [
+      { id: 'checklists', label: 'Checklists', icon: ClipboardCheck },
+      { id: 'schedule', label: 'Cronograma', icon: CalendarDays },
+    ] },
+    { label: 'CUSTOS', items: [
+      { id: 'budget', label: 'Orçamento', icon: TrendingUp },
+      { id: 'measurements', label: 'Medições', icon: ClipboardCheck },
+      { id: 'materials', label: 'Materiais', icon: Package, count: pendingRequests },
+    ] },
+    { label: 'ARQUIVOS', items: [
+      { id: 'documents', label: 'Documentos', icon: FolderOpen },
+    ] },
   ]
   const scheduleItems = [
     { title: 'Recuperação estrutural — face norte', period: '22 set — 04 out', progress: 76, status: 'Em andamento' },
@@ -994,7 +1008,7 @@ function EngineerPortal({ assignedProjects, onLogout }: { assignedProjects: Proj
   return (
     <div className="engineer-app">
       <header className="engineer-header"><button className="engineer-menu-button icon-button" onClick={() => setMenuOpen(true)} aria-label="Abrir menu"><Menu size={22} /></button><Logo compact /><button className="engineer-project-switch" onClick={() => setSelectedProjectId(null)}><Building2 size={18} /><span><small>OBRA ATUAL · TROCAR</small><strong>{project.name}</strong></span><ChevronDown size={15} /></button><div className="engineer-user"><span>LA</span><div><strong>Leonardo Alves</strong><small>Engenheiro</small></div><button className="icon-button" onClick={onLogout}><LogOut size={18} /></button></div></header>
-      <aside className={`sidebar engineer-sidebar ${menuOpen ? 'sidebar-open' : ''}`}><div className="sidebar-top"><Logo /><button className="icon-button engineer-sidebar-close" onClick={() => setMenuOpen(false)} aria-label="Fechar menu"><X size={20} /></button></div><button className="workspace-switch engineer-sidebar-project" onClick={() => { setSelectedProjectId(null); setMenuOpen(false) }}><div className="workspace-avatar"><HardHat size={18} /></div><div><small>Obra atual · trocar</small><strong>{project.name}</strong></div><ChevronDown size={16} /></button><nav className="main-nav">{navItems.map(item => { const Icon = item.icon; return <button key={item.id} className={section === item.id ? 'active' : ''} onClick={() => { setSection(item.id); setMenuOpen(false) }}><Icon size={19} /><span>{item.label}</span></button> })}</nav><div className="sidebar-bottom"><div className="user-block"><div className="avatar">LA</div><div><strong>Leonardo Alves</strong><small>Engenheiro</small></div><button className="logout-button" onClick={onLogout} title="Sair"><LogOut size={17} /></button></div></div></aside>
+      <aside className={`sidebar engineer-sidebar ${menuOpen ? 'sidebar-open' : ''}`}><div className="sidebar-top"><Logo /><button className="icon-button engineer-sidebar-close" onClick={() => setMenuOpen(false)} aria-label="Fechar menu"><X size={20} /></button></div><button className="workspace-switch engineer-sidebar-project" onClick={() => { setSelectedProjectId(null); setMenuOpen(false) }}><div className="workspace-avatar"><HardHat size={18} /></div><div><small>Obra atual · trocar</small><strong>{project.name}</strong></div><ChevronDown size={16} /></button><nav className="main-nav">{navGroups.map((group, groupIndex) => <div className="nav-group" key={group.label}><p className={`nav-label ${groupIndex ? 'nav-label-spaced' : ''}`}>{group.label}</p>{group.items.map(item => { const Icon = item.icon; return <button key={item.id} className={section === item.id ? 'active' : ''} onClick={() => { setSection(item.id); setMenuOpen(false) }}><Icon size={19} /><span>{item.label}</span>{item.count ? <em>{item.count}</em> : null}</button> })}</div>)}</nav><div className="sidebar-bottom"><div className="user-block"><div className="avatar">LA</div><div><strong>Leonardo Alves</strong><small>Engenheiro</small></div><button className="logout-button" onClick={onLogout} title="Sair"><LogOut size={17} /></button></div></div></aside>
       {menuOpen && <button className="engineer-overlay" onClick={() => setMenuOpen(false)} aria-label="Fechar menu" />}
       <main className="engineer-main">
         {section === 'dashboard' && <>
