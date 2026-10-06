@@ -893,6 +893,9 @@ function EngineerPortal({ assignedProjects, onLogout }: { assignedProjects: Proj
   const [section, setSection] = useState<EngineerSection>('dashboard')
   const [menuOpen, setMenuOpen] = useState(false)
   const [budgetView, setBudgetView] = useState<'sheet' | 'gantt'>('sheet')
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [section, selectedProjectId])
   const [message, setMessage] = useState('')
   const [chatMessages, setChatMessages] = useState<{ id: number; author: string; text?: string; photo?: string; time: string; mine: boolean }[]>([
     { id: 1, author: 'Carlos · Mestre de obras', text: 'A equipe iniciou o tratamento da fachada norte.', time: '07:18', mine: false },
@@ -1161,6 +1164,9 @@ function ClientPortal({ project: fixedProject, assignedProjects, updates, onComp
   const [notifOpen, setNotifOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const { collapsed, toggleGroup } = useCollapsedGroups('vertia-nav-client')
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [section, selectedProjectId])
   const clientNavGroups: Array<{ label: string; items: [ClientSection, typeof Home][] }> = [
     { label: 'SUA OBRA', items: [['Resumo', Home], ['Cronograma', CalendarDays], ['Atualizações', Sparkles], ['Fotos', Camera]] },
     { label: 'DECISÕES', items: [['Aprovações', ClipboardCheck], ['Documentos', FolderOpen]] },
@@ -1275,6 +1281,9 @@ export default function App() {
   useEffect(() => {
     if (!isPageEnabled(page, modules)) setPage('dashboard')
   }, [page, modules])
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [role, view, page, selectedProject])
   const currentProject = useMemo(() => selectedProject ?? projects[0], [selectedProject])
 
   const openProject = (project: Project) => { setSelectedProject(project); setView('company') }
