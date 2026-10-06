@@ -532,6 +532,9 @@ function GenericPage({ page, updates, onMenu }: { page: Page; updates: Update[];
 
 function ProjectDetail({ project, updates, onBack, onClient, onNewUpdate }: { project: Project; updates: Update[]; onBack: () => void; onClient: () => void; onNewUpdate: () => void }) {
   const [tab, setTab] = useState('Visão geral')
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [tab])
   return (
     <>
       <header className="project-topbar">
