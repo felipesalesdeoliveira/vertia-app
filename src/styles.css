@@ -604,3 +604,13 @@ h1, h2, h3, p { margin-top: 0; }
 .engineer-occurrence-list em.open { color: #c0392b; background: #fdeeec; }
 .engineer-occurrence-list em.progress { color: #a9641b; background: #fff0da; }
 .engineer-occurrence-list em.resolved { color: #147a59; background: #e7f8f1; }
+
+/* Engenheiro — menu lateral (gaveta) + hambúrguer em qualquer largura */
+.engineer-menu-button { display: inline-grid; flex: 0 0 auto; color: var(--navy); }
+.engineer-app .sidebar { transform: translateX(-100%); transition: transform .22s ease; box-shadow: 0 24px 60px rgba(4,10,28,.28); }
+.engineer-app .sidebar.sidebar-open { transform: translateX(0); }
+.engineer-sidebar-close { color: #aeb8d1; }
+.engineer-sidebar-project { width: auto; cursor: pointer; text-align: left; }
+.engineer-sidebar-project small { color: #9ca9c9; }
+.engineer-sidebar-project strong { color: white; }
+.engineer-overlay { position: fixed; inset: 0; z-index: 25; border: 0; background: rgba(4,10,28,.48); }
